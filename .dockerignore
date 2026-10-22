@@ -1,0 +1,17 @@
+*
+!Dockerfile
+!package.json
+!server.mjs
+!auth.mjs
+!usage-store.mjs
+!index.html
+!privacy.html
+!help.html
+!favicon.*
+!js/
+!js/**
+!css/
+!css/**
+!assets/
+!assets/styles/
+!assets/styles/**

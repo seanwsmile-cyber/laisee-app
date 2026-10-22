@@ -1,12 +1,12 @@
 /**
  * Laisee packet compositor.
  * Prefers local /api/generate proxy (Gemini / OpenRouter); keys stay on the server.
- * Falls back to Canvas composite when proxy is missing, unconfigured, or fails.
+ * Local composition is an explicit user choice; failed AI requests preserve the draft.
  *
  * Never hardcode API keys in the browser.
  */
 
-import { STYLES, CATEGORIES, PET_STYLES, KIDS_STYLES, getStylesByCategory, buildPacketPrompt } from './styles.js?v=20261022k';
+import { STYLES, CATEGORIES, PET_STYLES, KIDS_STYLES, getStylesByCategory, buildPacketPrompt } from './styles.js?v=20261022l';
 
 export { STYLES, CATEGORIES, PET_STYLES, KIDS_STYLES, getStylesByCategory, buildPacketPrompt };
 
@@ -14,7 +14,7 @@ const STYLE_IDS = STYLES.map((s) => s.id);
 
 /** Front-panel image paths (cropped from full die-cuts). */
 const STYLE_IMAGES = Object.fromEntries(
-  STYLES.map((s) => [s.id, s.image.includes('?') ? s.image : `${s.image}?v=20261022k`])
+  STYLES.map((s) => [s.id, s.image.includes('?') ? s.image : `${s.image}?v=20261022l`])
 );
 
 const STYLE_THUMBS = Object.fromEntries(
@@ -268,10 +268,10 @@ function loadImage(src) {
   const p = new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(`Failed to load ${src}`));
+    img.onerror = () => reject(new Error('Failed to load image'));
     img.src = src;
   });
-  imageCache.set(src, p);
+  if (!src.startsWith('data:') && !src.startsWith('blob:')) imageCache.set(src, p);
   return p;
 }
 
@@ -530,6 +530,16 @@ async function dataUrlToCanvas(dataUrl, dims) {
   canvas.width = dims.w;
   canvas.height = dims.h;
   const ctx = canvas.getContext('2d');
+  // Native 1:2 / 9:16 requests leave only a small background crop to reach 14:27.
+  // Reject a wrong-shaped response rather than stretching it or inventing padding.
+  const ratio = img.naturalWidth / img.naturalHeight;
+  const target = dims.w / dims.h;
+  const crop = 1 - Math.min(ratio / target, target / ratio);
+  if (!Number.isFinite(crop) || crop > 0.09) {
+    const error = new Error('AI image aspect ratio does not fit the packet');
+    error.code = 'IMAGE_ASPECT_MISMATCH';
+    throw error;
+  }
   coverDrawImage(ctx, img, 0, 0, dims.w, dims.h);
   const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
   return { canvas, blob, dataUrl: canvas.toDataURL('image/png') };
@@ -539,48 +549,28 @@ async function dataUrlToCanvas(dataUrl, dims) {
  * Call local serverless/proxy. No API key in the browser.
  * @returns {Promise<object|null>} null means soft-skip to canvas
  */
-async function tryProxyGenerate({ prompt, photos, style, endpoint }) {
+async function tryProxyGenerate({ photos, style, category, greeting, message, tweak, endpoint }) {
   const url = endpoint || '/api/generate';
-  // Style template FIRST, then user photos (max 2–3 user shots; Image API ~3 refs total).
-  // Skip sending wireframe placeholder templates (style09/style10) so AI doesn't copy placeholder stick-figures/text.
-  const styleMeta = STYLES.find((s) => s.id === style);
-  let styleImage = null;
-  if (!styleMeta?.skipTemplateImage) {
-    try {
-      const styleSrc = STYLE_IMAGES[style] || STYLE_IMAGES.style01;
-      if (styleSrc) {
-        const styleImg = await loadImage(styleSrc);
-        // Keep template compact and readable to the model.
-        styleImage = imageToJpegDataUrl(styleImg, 1024);
-      }
-    } catch (err) {
-      console.warn('[laisee] style template encode failed', err);
-    }
-  }
-
-  let photoPayload = [];
+  const body = { style, category, greeting, message, tweak, photos: photos.map((img) => imageToJpegDataUrl(img)) };
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 125000);
+  let res;
+  let json;
   try {
-    const maxUser = styleImage ? 2 : 3;
-    photoPayload = photos.slice(0, maxUser).map((img) => imageToJpegDataUrl(img));
-  } catch (err) {
-    console.warn('[laisee] photo encode failed', err);
-  }
-
-  const body = { prompt, photos: photoPayload };
-  if (styleImage) body.styleImage = styleImage;
-
-  const res = await fetch(url, {
+    res = await fetch(url, {
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
-  });
-
-  let json = null;
-  try {
+    signal: controller.signal,
+    });
     json = await res.json();
-  } catch {
-    throw new Error(`AI proxy non-JSON (${res.status})`);
+  } catch (cause) {
+    const err = new Error('Generation request could not be completed');
+    err.code = controller.signal.aborted ? 'UPSTREAM_TIMEOUT' : 'NETWORK_ERROR';
+    throw err;
+  } finally {
+    clearTimeout(timer);
   }
 
   if (!res.ok || !json?.ok) {
@@ -610,7 +600,7 @@ async function tryProxyGenerate({ prompt, photos, style, endpoint }) {
 /**
  * Generate a front-face laisee packet on a canvas.
  * @param {object} opts
- * @param {string} opts.style - style id (style01…style10)
+ * @param {string} opts.style - catalogue style id
  * @param {string} opts.aspect - '2:3' | '3:2' | '1:1'
  * @param {HTMLImageElement[]} opts.photos
  * @param {string} opts.greeting
@@ -628,16 +618,10 @@ export async function generatePacket({
   tweak = '',
   api = null,
 } = {}) {
-  // Always vertical packet aspect (print 3.5×6.75; OpenRouter aspect_ratio 2:3).
+  // Always vertical packet trim (3.5×6.75 in); the server requests a close native ratio.
   aspect = 'packet';
-
-  const promptText = buildPacketPrompt({
-    styleId: style,
-    category,
-    greeting,
-    message,
-    tweak,
-  });
+  if (photos.length < 1 || photos.length > 2) throw new Error('Please use 1–2 photos.');
+  category = category || STYLES.find((s) => s.id === style)?.category || 'pet';
 
   const dims = ASPECT_MAP[aspect] || ASPECT_MAP.packet;
 
@@ -645,13 +629,14 @@ export async function generatePacket({
   // api: { useProxy?: boolean, endpoint?: string, requireRemote?: boolean }
   // Legacy api.apiKey in the browser is ignored on purpose — use server env instead.
   const useProxy = !api || api.useProxy !== false;
-  let limitNotice = null;
   if (useProxy) {
-    try {
       const remote = await tryProxyGenerate({
-        prompt: promptText,
         photos,
         style,
+        category,
+        greeting,
+        message,
+        tweak,
         endpoint: api?.endpoint,
       });
       const painted = await dataUrlToCanvas(remote.dataUrl, dims);
@@ -663,24 +648,10 @@ export async function generatePacket({
         ...painted,
         diecutCanvas,
         styleId: style,
-        prompt: promptText,
-        mode: 'ai',
+        mode: remote.mode,
         provider: remote.provider,
         model: remote.model,
       };
-    } catch (err) {
-      const soft = err?.fallback !== false && !api?.requireRemote;
-      console.warn(
-        `[laisee] AI proxy → Canvas fallback (mode=canvas, not AI replace): ${err?.code || ''} ${err?.message || err}`
-      );
-      if (!soft) throw err;
-      if (err?.code === 'RATE_LIMITED') {
-        limitNotice = err.message;
-      } else if (err?.message && err?.code !== 'AI_MOCK') {
-        limitNotice = `${err.message}（已改用本地合成）`;
-      }
-      // continue to canvas composite (style base + photo window + user greeting)
-    }
   }
   const w = dims.w;
   const h = dims.h;
@@ -798,7 +769,7 @@ export async function generatePacket({
   const dataUrl = canvas.toDataURL('image/png');
   const diecutCanvas = canvasWithDiecut(canvas, { styleId: style });
   console.info('[laisee] mode=canvas (local composite: style base + photo window; not AI template-replace)');
-  return { canvas, diecutCanvas, styleId: style, blob, dataUrl, prompt: promptText, mode: 'canvas', notice: limitNotice };
+  return { canvas, diecutCanvas, styleId: style, blob, dataUrl, mode: 'canvas' };
 }
 
 /**

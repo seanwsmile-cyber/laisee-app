@@ -7,11 +7,15 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import http from 'node:http';
+import fs from 'node:fs';
+import os from 'node:os';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 const PORT_A = 18765;
 const PORT_B = 18766;
+const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'laisee-auth-'));
+const payload = {style:'style01',category:'pet',greeting:'恭喜發財',message:'',tweak:'',photos:['data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aIioAAAAASUVORK5CYII=']};
 
 function wait(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -63,7 +67,12 @@ function startServer(port, extraEnv = {}) {
       ...process.env,
       PORT: String(port),
       HOST: '127.0.0.1',
+      NODE_ENV: 'test',
+      LOAD_DOTENV: '0',
+      GEN_USAGE_FILE: path.join(temp, `usage-${port}.json`),
       AI_MOCK: '1',
+      AI_DISABLED: '0',
+      AI_DISABLE_FILE: '',
       // Ensure gate on for test A; override below for B
       AUTH_DISABLED: '0',
       SESSION_SECRET: 'smoke-test-session-secret-not-real',
@@ -122,7 +131,7 @@ async function main() {
       failures.push(`A: /api/me expected 401 got ${me.status}`);
     }
     const gen = await request(PORT_A, 'POST', '/api/generate', {
-      body: JSON.stringify({ prompt: 'smoke' }),
+      body: JSON.stringify(payload),
     });
     if (gen.status !== 401 || gen.json?.error !== 'UNAUTHORIZED') {
       failures.push(
@@ -154,10 +163,10 @@ async function main() {
       failures.push(`B: /api/me expected 200 authenticated got ${me.status}`);
     }
     const gen = await request(PORT_B, 'POST', '/api/generate', {
-      body: JSON.stringify({ prompt: 'smoke' }),
+      body: JSON.stringify(payload),
     });
-    if (gen.status === 401) {
-      failures.push('B: /api/generate should not be 401 when AUTH_DISABLED=1');
+    if (gen.status !== 503 || gen.json?.error !== 'AI_MOCK') {
+      failures.push('B: /api/generate must return 503 AI_MOCK without any real provider call');
     } else {
       // 503 AI_MOCK or 200 — both fine
       console.log(
