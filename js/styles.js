@@ -8,7 +8,7 @@
  * - 'kids' (👶 小朋友／親子): style09–style10 (2 styles) — child facial features, 2–3 head / 2-head chibi ratio & festive kids attire
  */
 
-const CACHE = '20261022h';
+const CACHE = '20261022i';
 
 export const CATEGORIES = {
   pet: {
@@ -179,7 +179,6 @@ export const STYLES = [
   {
     id: 'style09',
     category: 'kids',
-    skipTemplateImage: true,
     nameZh: 'Q版童趣',
     nameEn: 'Chibi Kids',
     captionZh: '二／三頭身 × 小朋友／親子友好',
@@ -188,18 +187,17 @@ export const STYLES = [
     thumb: `assets/styles/pack-09-thumb.jpg?v=${CACHE}`,
     profileKey: 'chibi_kids',
     scene:
-      'Create a rich festive Lunar New Year chibi red-packet scene: saturated crimson-red silk and gold brocade background, glowing red lanterns hanging above, auspicious golden clouds, plum blossoms and soft warm festival bokeh. Full-bleed colored scenery reaching all four edges with an open upper plaque area for gold brush calligraphy.',
+      'Preserve the rich festive Lunar New Year chibi red-packet scene: saturated crimson-red silk background, glowing red lanterns hanging above, auspicious golden clouds, blooming pink plum blossoms and soft warm festival bokeh. Full-bleed colored scenery reaching all four edges with an open upper plaque area for gold brush calligraphy.',
     subject:
-      'Reimagine every uploaded child or family member as a cute 2–3 head chibi human character while keeping recognizable facial features (eye shape, brows, cheeks, smile, hairstyle, fringe and glasses if worn), apparent age and exact person count. Dress them in modest, ornate Lunar New Year festive kids clothing (embroidered red-and-gold tang suit, qipao or festive vest with gold trim) and soft rounded shoes with human hands and limbs. Never replace a child with a generic mascot or animal.',
+      'Reimagine every uploaded child or family member as a cute 2–3 head chibi human character while keeping recognizable facial features (eye shape, brows, cheeks, smile, hairstyle, fringe and glasses if worn), apparent age and exact person count. Dress them in modest, ornate Lunar New Year festive kids clothing (embroidered red-and-gold tang suit, qipao or festive vest with gold trim) holding a glowing festive lantern with human hands and limbs. Never replace a child with a generic mascot or animal.',
     lettering:
       'Clear warm-gold rounded brush calligraphy with solid readable strokes, open counters and kid-friendly weight in the upper reserved plaque area.',
     avoid:
-      'No wireframe diagrams, flat vector stick figures, English placeholder text, photoreal paste-ins, white studio backdrop, photo rectangle, sticker halo, adult model proportions, animal paws/ears on children or leftover template characters.',
+      'No photoreal paste-ins, white studio backdrop, photo rectangle, sticker halo, adult model proportions, animal paws/ears on children or leftover template characters.',
   },
   {
     id: 'style10',
     category: 'kids',
-    skipTemplateImage: true,
     nameZh: '二頭身寶貝',
     nameEn: '2-Head Baby',
     captionZh: '二頭身寶貝 × 親子友好利是封',
@@ -208,13 +206,13 @@ export const STYLES = [
     thumb: `assets/styles/pack-10-thumb.jpg?v=${CACHE}`,
     profileKey: 'chibi_baby',
     scene:
-      'Create a cozy pastel-gold on deep vermilion-red baby-chibi red-packet atmosphere: soft 3D storybook lighting, gentle golden sparkles, rounded festive lanterns, lucky tangerine and gold ingot props, and continuous rich red-and-gold scenery to all four edges.',
+      'Preserve the cozy warm-gold on deep vermilion-red baby-chibi red-packet atmosphere: soft 3D storybook lighting, gentle golden sparkles, hanging red lanterns, lucky tangerines (大桔) and golden ingots (元寶) around the base, and continuous rich red-and-gold scenery to all four edges.',
     subject:
-      'Reimagine uploaded baby, toddler, child or family identities as true 2-head baby/toddler chibi human characters with soft chubby proportions while preserving each child’s recognizable face shape, eyes, hairstyle, skin tone, expression and exact count. Dress them in adorable New Year baby/kids festive outfits (padded red-and-gold tang jacket, auspicious cloud collar or festive lion cap framing the face) fitted to a tiny 2-head body scale with distinct faces and human hands.',
+      'Reimagine uploaded baby, toddler, child or family identities as true 2-head baby/toddler chibi human characters with soft chubby proportions while preserving each child’s recognizable face shape, eyes, hairstyle, skin tone, expression and exact count. Dress them in adorable New Year baby/kids festive outfits (embroidered red-and-gold tang jacket and white-trimmed lion-dance cap resting above the forehead with face and hair clearly visible) fitted to a tiny 2-head body scale with distinct faces and human hands.',
     lettering:
       'Soft matte golden brush lettering, rounded and readable in the upper reserved greeting area.',
     avoid:
-      'No wireframe diagrams, flat vector stick figures, English placeholder text, tall realistic bodies, white backdrop, photographic paste-in, photo mat, merged faces, animal anatomy on children or leftover template subjects.',
+      'No tall realistic bodies, white backdrop, photographic paste-in, photo mat, merged faces, animal anatomy on children or leftover template subjects.',
   },
 ];
 

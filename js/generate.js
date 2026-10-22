@@ -6,7 +6,7 @@
  * Never hardcode API keys in the browser.
  */
 
-import { STYLES, CATEGORIES, PET_STYLES, KIDS_STYLES, getStylesByCategory, buildPacketPrompt } from './styles.js?v=20261022h';
+import { STYLES, CATEGORIES, PET_STYLES, KIDS_STYLES, getStylesByCategory, buildPacketPrompt } from './styles.js?v=20261022i';
 
 export { STYLES, CATEGORIES, PET_STYLES, KIDS_STYLES, getStylesByCategory, buildPacketPrompt };
 
@@ -14,7 +14,7 @@ const STYLE_IDS = STYLES.map((s) => s.id);
 
 /** Front-panel image paths (cropped from full die-cuts). */
 const STYLE_IMAGES = Object.fromEntries(
-  STYLES.map((s) => [s.id, s.image.includes('?') ? s.image : `${s.image}?v=20261022h`])
+  STYLES.map((s) => [s.id, s.image.includes('?') ? s.image : `${s.image}?v=20261022i`])
 );
 
 const STYLE_THUMBS = Object.fromEntries(

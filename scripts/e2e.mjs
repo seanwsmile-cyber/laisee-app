@@ -131,6 +131,7 @@ async function main() {
   await page.waitForFunction(() => document.querySelectorAll('.style-card').length === 8);
   await page.click('.category-tab[data-category="kids"]');
   await page.waitForFunction(() => document.querySelectorAll('.style-card').length === 2);
+  await shotBoth(page, 'style-kids');
   await page.click('.category-tab[data-category="pet"]');
   await page.waitForFunction(() => document.querySelectorAll('.style-card').length === 8);
   await page.click('.style-card[data-style="style01"]');
