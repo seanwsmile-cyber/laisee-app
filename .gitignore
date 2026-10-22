@@ -1,0 +1,13 @@
+node_modules/
+.DS_Store
+*.log
+.env
+.env.local
+.env.*.local
+cloudflared.exe
+
+# local AI test outputs
+tmp-ai-*
+tmp/
+shots/*.png
+!shots/.gitkeep

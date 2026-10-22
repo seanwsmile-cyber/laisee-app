@@ -1,0 +1,17 @@
+{
+  "name": "eprint-ai-laisee",
+  "version": "1.0.0",
+  "private": true,
+  "description": "e-print AI \u5229\u662f\u5c01 \u2014 HK New Year red packet designer (SPA + local AI proxy)",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "start:static": "python3 -m http.server 8765",
+    "test:e2e": "node scripts/e2e.mjs",
+    "test:smoke": "node scripts/smoke-openrouter-defaults.mjs && node scripts/smoke-bleed.mjs && node scripts/smoke-auth.mjs",
+    "test:auth": "node scripts/smoke-auth.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}

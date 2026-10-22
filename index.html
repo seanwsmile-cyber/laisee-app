@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#b52a2d" />
+  <meta name="description" content="e-print AI 利是封 — 香港新年利是封設計器" />
+  <title>e-print AI 利是封</title>
+  <link rel="icon" href="./favicon.ico" sizes="any" />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="apple-touch-icon" href="./favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/styles.css?v=20261022h" />
+</head>
+<body>
+  <div class="auth-gate" id="auth-gate" hidden aria-hidden="true">
+    <div class="auth-card">
+      <div class="brand-mark auth-brand">
+        <span class="seal" aria-hidden="true">封</span>
+        <span data-i18n="brand">e-print AI 利是封</span>
+      </div>
+      <p class="auth-sub" data-i18n="brandSub">香港新年利是封設計器</p>
+      <h1 class="auth-title" data-i18n="authTitle">登入後開始設計</h1>
+      <p class="auth-desc" data-i18n="authDesc">請用 Google 或 e-print 帳號登入</p>
+      <p class="auth-error" id="auth-error" hidden role="alert"></p>
+      <button type="button" class="btn btn-primary auth-btn" id="btn-login-google" data-i18n="authGoogle">使用 Google 登入</button>
+      <p class="auth-hint" id="auth-google-hint" hidden></p>
+      <button type="button" class="btn btn-secondary auth-btn" id="btn-login-eprint" data-i18n="authEprint">e-print 帳號登入</button>
+      <p class="auth-hint" id="auth-eprint-hint" hidden></p>
+      <div class="auth-lang lang-toggle" role="group" data-i18n-aria="langLabel" aria-label="語言">
+        <button type="button" data-lang="zh-Hant" aria-pressed="true">
+          <span class="lang-label-full">繁中</span>
+          <span class="lang-label-short" aria-hidden="true">中</span>
+        </button>
+        <button type="button" data-lang="en" aria-pressed="false">
+          <span class="lang-label-full">English</span>
+          <span class="lang-label-short" aria-hidden="true">EN</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app auth-blocked" id="app" aria-hidden="true">
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="false">
+        <span class="seal" aria-hidden="true">封</span>
+        <span class="brand-text" data-i18n="brand">e-print AI 利是封</span>
+      </div>
+      <div class="user-chip" id="user-chip" hidden></div>
+      <div class="lang-toggle" role="group" data-i18n-aria="langLabel" aria-label="語言">
+        <button type="button" data-lang="zh-Hant" aria-pressed="true">
+          <span class="lang-label-full">繁中</span>
+          <span class="lang-label-short" aria-hidden="true">中</span>
+        </button>
+        <button type="button" data-lang="en" aria-pressed="false">
+          <span class="lang-label-full">English</span>
+          <span class="lang-label-short" aria-hidden="true">EN</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="step-indicator" id="step-indicator" hidden></div>
+
+    <main class="screens">
+      <!-- Step 1: Start -->
+      <section class="screen active" data-step="1" aria-labelledby="start-title">
+        <div class="start-hero">
+          <div class="hero-glow" aria-hidden="true"></div>
+          <div class="hero-ornament" aria-hidden="true"></div>
+          <div class="hero-seal" aria-hidden="true"></div>
+          <h1 id="start-title" data-i18n="brand">e-print AI 利是封</h1>
+          <p class="hero-sub" data-i18n="brandSub">香港新年利是封設計器</p>
+          <p class="hero-tagline" data-i18n="heroTagline">AI 度身利是封 · 可印 3.5×6.75 · 含出血下載</p>
+          <ul class="hero-chips" data-i18n-aria="chipFeaturesAria" aria-label="產品特點">
+            <li class="hero-chip" data-i18n="chipAi">真 AI 出圖</li>
+            <li class="hero-chip" data-i18n="chipPrint">可印含出血</li>
+            <li class="hero-chip" data-i18n="chipStyles">十款風格</li>
+          </ul>
+          <div class="hero-preview" data-i18n-aria="heroPreviewAria" aria-label="款式預覽">
+            <p class="hero-preview-label" data-i18n="heroPreviewLabel">風格一覽</p>
+            <div class="hero-preview-row" role="list">
+              <figure class="hero-thumb" role="listitem">
+                <img src="assets/styles/front-01-thumb.jpg?v=20261022f" alt="" width="72" height="138" loading="lazy" decoding="async" />
+              </figure>
+              <figure class="hero-thumb" role="listitem">
+                <img src="assets/styles/front-03-thumb.jpg?v=20261022f" alt="" width="72" height="138" loading="lazy" decoding="async" />
+              </figure>
+              <figure class="hero-thumb" role="listitem">
+                <img src="assets/styles/pack-04-thumb.jpg?v=20261022f" alt="" width="72" height="138" loading="lazy" decoding="async" />
+              </figure>
+              <figure class="hero-thumb hero-thumb--q" role="listitem">
+                <img src="assets/styles/pack-09-thumb.jpg?v=20261022f" alt="" width="72" height="138" loading="lazy" decoding="async" />
+              </figure>
+            </div>
+          </div>
+          <div class="mode-picker" role="group" data-i18n-aria="modePickerLabel" aria-label="選擇設計對象">
+            <p class="mode-picker-label" data-i18n="modePickerLabel">選擇設計對象</p>
+            <div class="mode-picker-grid">
+              <button type="button" class="mode-card" id="mode-card-pet" data-category="pet" aria-pressed="true">
+                <span class="mode-card-title" data-i18n="modePetTitle">🐾 小動物／毛孩</span>
+                <span class="mode-card-desc" data-i18n="modePetDesc">貓狗毛孩 · 8 款插畫風格</span>
+              </button>
+              <button type="button" class="mode-card" id="mode-card-kids" data-category="kids" aria-pressed="false">
+                <span class="mode-card-title" data-i18n="modeKidsTitle">👶 小朋友／親子</span>
+                <span class="mode-card-desc" data-i18n="modeKidsDesc">Q版萌娃 · 2 款童趣風格</span>
+              </button>
+            </div>
+          </div>
+          <div class="hero-cta">
+            <button type="button" class="btn btn-primary btn-start-cta" id="btn-start" data-i18n="startDesign">開始設計</button>
+            <p class="hero-cta-hint" data-i18n="startCtaHint">約 1 分鐘完成</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: Terms -->
+      <section class="screen" data-step="2" hidden aria-hidden="true" aria-labelledby="terms-title">
+        <div class="terms-card">
+          <h2 id="terms-title" data-i18n="termsTitle">使用條款</h2>
+          <div class="terms-scroll" id="terms-scroll" tabindex="0" data-i18n="termsBody"></div>
+        </div>
+        <p class="terms-hint" id="terms-hint" data-i18n="termsScrollHint">請捲動至最底以啟用「同意」</p>
+      </section>
+
+      <!-- Step 3: Style -->
+      <section class="screen" data-step="3" hidden aria-hidden="true" aria-labelledby="style-title">
+        <h2 id="style-title" class="section-title" data-i18n="pickStyleTitle">揀款式</h2>
+        <div class="category-tabs" id="category-tabs" role="tablist" data-i18n-aria="modePickerLabel" aria-label="選擇設計對象">
+          <button type="button" class="category-tab" role="tab" id="tab-pet" data-category="pet" aria-selected="true" data-i18n="catTabPet">🐾 小動物／毛孩（8款）</button>
+          <button type="button" class="category-tab" role="tab" id="tab-kids" data-category="kids" aria-selected="false" data-i18n="catTabKids">👶 小朋友／親子（2款）</button>
+        </div>
+        <p class="section-hint" id="pick-style-hint" data-i18n="pickStyleHintPet">毛孩專屬插畫風格 — AI 自動保留毛色、品種特徵與新年配飾</p>
+        <p class="aspect-locked" aria-label="aspect">
+          <span data-i18n="aspectLabel">比例</span>
+          <span class="aspect-locked-value" data-i18n="aspect23">3.5×6.75（利是封）</span>
+        </p>
+        <div class="style-grid" id="style-grid" role="listbox" data-i18n-aria="stylesLabel" aria-label="款式"></div>
+      </section>
+
+      <!-- Step 4: Upload -->
+      <section class="screen" data-step="4" hidden aria-hidden="true" aria-labelledby="upload-title">
+        <h2 id="upload-title" class="section-title" data-i18n="uploadTitlePet">上載毛孩／小動物相片</h2>
+        <p class="section-hint" id="upload-hint" data-i18n="uploadHintPet">上載 1–5 張清晰毛孩正面相，AI 會保留品種、毛色同斑紋</p>
+        <div class="dropzone" id="dropzone" role="button" tabindex="0" data-i18n-aria="uploadDrop" aria-label="上載">
+          <div class="icon" aria-hidden="true">📷</div>
+          <div data-i18n="uploadDrop">拖放相片到此處，或點擊揀檔</div>
+        </div>
+        <label for="file-input" class="sr-only" data-i18n="uploadFileLabel">選擇相片檔案</label>
+        <input type="file" id="file-input" class="sr-only" accept="image/*" multiple />
+        <div class="photo-grid" id="photo-grid" aria-live="polite"></div>
+        <div class="upload-meta">
+          <span class="count" id="upload-count">0 / 5</span>
+          <button type="button" class="btn btn-secondary" id="btn-add-photo" style="max-width:none;width:auto;padding:10px 18px" data-i18n="uploadAdd">加另一個主體</button>
+        </div>
+      </section>
+
+      <!-- Step 5: Greeting -->
+      <section class="screen" data-step="5" hidden aria-hidden="true" aria-labelledby="greeting-title">
+        <h2 id="greeting-title" class="section-title" data-i18n="greetingTitle">賀詞</h2>
+        <p class="section-hint" data-i18n="greetingHint">選擇或輸入利是封賀詞</p>
+        <div class="greeting-grid" id="greeting-grid" role="group"></div>
+        <div class="field hidden" id="custom-greeting-wrap">
+          <label for="custom-greeting" data-i18n="greetingCustom">自由輸入</label>
+          <input id="custom-greeting" type="text" maxlength="30" data-i18n-placeholder="greetingCustomPlaceholder" autocomplete="off" />
+          <div class="char-count" id="custom-greeting-count">0/30</div>
+        </div>
+        <div class="field">
+          <label for="message-input" data-i18n="messageLabel">短訊息（選填）</label>
+          <input id="message-input" type="text" maxlength="30" data-i18n-placeholder="messagePlaceholder" autocomplete="off" />
+          <div class="char-count" id="message-count">0/30</div>
+        </div>
+      </section>
+
+      <!-- Step 6: Result -->
+      <section class="screen" data-step="6" hidden aria-hidden="true" aria-labelledby="result-title">
+        <h2 id="result-title" class="section-title" data-i18n="resultTitle">你的利是封</h2>
+        <p class="section-hint" data-i18n="resultHint">可切換「全景刀模圖／正面 AI 圖」，支援縮放及移動預覽</p>
+        <div class="category-tabs preview-view-tabs" id="preview-view-tabs" role="tablist" aria-label="預覽模式">
+          <button type="button" class="category-tab preview-view-tab" role="tab" id="btn-view-diecut" data-view="diecut" aria-selected="true" data-i18n="viewDiecut">🗂️ 全景刀模展開圖</button>
+          <button type="button" class="category-tab preview-view-tab" role="tab" id="btn-view-front" data-view="front" aria-selected="false" data-i18n="viewFront">🖼️ 正面 AI 圖</button>
+        </div>
+        <div class="preview-stage" id="preview-stage" aria-label="preview"></div>
+        <div class="field" style="margin-top:14px">
+          <label for="tweak-input" data-i18n="tweakLabel">修改指示</label>
+          <input id="tweak-input" type="text" data-i18n-placeholder="tweakPlaceholder" autocomplete="off" />
+        </div>
+        <div class="result-actions">
+          <button type="button" class="btn btn-gold" id="btn-regenerate" data-i18n="regenerate">再生成</button>
+          <div class="result-actions-row">
+            <button type="button" class="btn btn-primary" id="btn-download-diecut" data-i18n="downloadDiecut">下載全景刀模 PNG</button>
+            <button type="button" class="btn btn-secondary" id="btn-share" data-i18n="share">分享</button>
+          </div>
+          <button type="button" class="btn btn-secondary" id="btn-download" data-i18n="downloadBleed">下載正面 PNG（含出血）</button>
+          <button type="button" class="btn btn-secondary" id="btn-download-trim" data-i18n="downloadTrim">下載正面 PNG（淨尺寸）</button>
+          <button type="button" class="btn btn-ghost" id="btn-restart" data-i18n="restart">重新開始</button>
+        </div>
+        <p class="print-hint" data-i18n="printHint">含出血下載：1125×2100 px（3.75×7 in @ 300 dpi），中央 trim 區 1050×2025（3.5×6.75 in）。重要內容請留喺距 trim 邊緣約 0.15 in 安全區。淨尺寸下載為 1050×2025（無出血）。</p>
+      </section>
+    </main>
+
+    <div class="footer-actions hidden" id="footer-actions">
+      <button type="button" class="btn btn-ghost" id="btn-back" data-i18n="back">返回</button>
+      <button type="button" class="btn btn-primary" id="btn-next" data-i18n="next" disabled>下一步</button>
+    </div>
+  </div>
+
+  <div class="loading-overlay" id="loading-overlay" aria-hidden="true" aria-busy="false" role="status">
+    <div class="spinner" aria-hidden="true"></div>
+    <div id="loading-text">利是封製作中…</div>
+  </div>
+  <div class="app-toast" id="app-toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="./js/app.js?v=20261022h"></script>
+</body>
+</html>
