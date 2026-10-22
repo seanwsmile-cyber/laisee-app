@@ -733,6 +733,10 @@ img { max-width: 100%; display: block; }
 }
 
 .style-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
   border: 2px solid transparent;
   background: var(--white);
   border-radius: var(--radius-sm);

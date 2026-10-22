@@ -1,7 +1,7 @@
 /**
  * Frontend login gate — requires /api/me before showing the 6-step flow.
  */
-import { t } from './i18n.js?v=20261022i';
+import { t } from './i18n.js?v=20261022j';
 
 let lang = 'zh-Hant';
 let config = {

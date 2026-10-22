@@ -9,7 +9,11 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import dns from 'node:dns';
 import { fileURLToPath } from 'node:url';
+
+// Avoid IPv6 blackhole / UND_ERR_CONNECT_TIMEOUT on Windows VPN adapters when calling OpenRouter/Gemini
+dns.setDefaultResultOrder('ipv4first');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;

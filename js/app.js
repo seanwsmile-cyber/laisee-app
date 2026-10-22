@@ -1,6 +1,6 @@
-import { t } from './i18n.js?v=20261022i';
-import { ensureAuth, setAuthLang } from './auth.js?v=20261022i';
-import { generatePacket, STYLE_IDS, STYLE_THUMBS, STYLE_IMAGES, STYLES, getStylesByCategory, PRINT_SPEC, exportPngWithBleed, exportPngWithDiecut, canvasWithDiecut } from './generate.js?v=20261022i';
+import { t } from './i18n.js?v=20261022j';
+import { ensureAuth, setAuthLang } from './auth.js?v=20261022j';
+import { generatePacket, STYLE_IDS, STYLE_THUMBS, STYLE_IMAGES, STYLES, getStylesByCategory, PRINT_SPEC, exportPngWithBleed, exportPngWithDiecut, canvasWithDiecut } from './generate.js?v=20261022j';
 
 const STYLE_LABEL_KEYS = {
   style01: 'styleStyle01',
@@ -13,6 +13,9 @@ const STYLE_LABEL_KEYS = {
   style08: 'styleStyle08',
   style09: 'styleStyle09',
   style10: 'styleStyle10',
+  style11: 'styleStyle11',
+  style12: 'styleStyle12',
+  style13: 'styleStyle13',
 };
 
 const GREETING_PRESETS_BY_CATEGORY = {

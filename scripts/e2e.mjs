@@ -127,10 +127,10 @@ async function main() {
   await page.click('#btn-next');
   await page.waitForSelector('.screen[data-step="3"].active');
 
-  // Step 3: verify category tabs (Pet = 8 styles, Kids = 2 styles) and pick style
+  // Step 3: verify category tabs (Pet = 8 styles, Kids = 5 styles) and pick style
   await page.waitForFunction(() => document.querySelectorAll('.style-card').length === 8);
   await page.click('.category-tab[data-category="kids"]');
-  await page.waitForFunction(() => document.querySelectorAll('.style-card').length === 2);
+  await page.waitForFunction(() => document.querySelectorAll('.style-card').length === 5);
   await shotBoth(page, 'style-kids');
   await page.click('.category-tab[data-category="pet"]');
   await page.waitForFunction(() => document.querySelectorAll('.style-card').length === 8);

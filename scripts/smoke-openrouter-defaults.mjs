@@ -95,9 +95,9 @@ assert.match(genSrc, /STYLE_IMAGES\[style\]/, 'frontend must load style template
 // Runtime: buildPacketPrompt assembles worker-like prompt
 const { pathToFileURL } = await import('node:url');
 const { buildPacketPrompt, STYLES, PET_STYLES, KIDS_STYLES } = await import(pathToFileURL(path.join(root, 'js/styles.js')).href);
-assert.equal(STYLES.length, 10);
+assert.equal(STYLES.length, 13);
 assert.equal(PET_STYLES.length, 8);
-assert.equal(KIDS_STYLES.length, 2);
+assert.equal(KIDS_STYLES.length, 5);
 const p = buildPacketPrompt({ styleId: 'style01', category: 'pet', greeting: '恭喜發財' });
 assert.match(p, /full-bleed/);
 assert.match(p, /NO WHITE BACKDROP/);
