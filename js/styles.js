@@ -8,7 +8,7 @@
  * - 'kids' (👶 小朋友／親子): style09–style13 (5 styles) — print-friendly clean flat/2D chibi, child facial likeness & simple festive attire
  */
 
-const CACHE = '20261022j';
+const CACHE = '20261022k';
 
 export const CATEGORIES = {
   pet: {
@@ -179,17 +179,17 @@ export const STYLES = [
   {
     id: 'style09',
     category: 'kids',
-    nameZh: 'Q版童趣',
-    nameEn: 'Chibi Kids',
-    captionZh: '簡約紅底祥雲 × 易印扁平Q版',
-    captionEn: 'Clean red & gold clouds × print-ready chibi',
+    nameZh: '朱紅祥雲',
+    nameEn: 'Crimson Lantern',
+    captionZh: '經典紅底 × 燈籠萌娃（單人）',
+    captionEn: 'Classic red & clouds × lantern kid (solo)',
     image: 'assets/styles/pack-09.jpg',
     thumb: `assets/styles/pack-09-thumb.jpg?v=${CACHE}`,
     profileKey: 'chibi_kids',
     scene:
       'Preserve a clean, print-friendly flat 2D Lunar New Year red-packet background: solid rich crimson-red field (#b52a2d), simple bold-lined flat golden auspicious cloud motifs, and a clean gold hairline border frame. Keep large, uncluttered color blocks with zero tiny bokeh sparks or complex gradients so it prints crisply in CMYK.',
     subject:
-      'Reimagine every uploaded child or family member as a cute 2.5-head flat/cel-shaded chibi human character with bold clean outlines and simple flat color shading while keeping recognizable facial features (eye shape, brows, cheeks, smile, hairstyle, fringe and glasses if worn), apparent age and exact person count. Dress them in a clean, simple red-and-gold tang suit (bold flat gold trim, no tiny micro-embroidery) holding a simple round red lantern with human hands.',
+      'Reimagine the uploaded child as a cute 2.5-head flat/cel-shaded chibi human character with bold clean outlines and simple flat color shading while keeping recognizable facial features (eye shape, brows, cheeks, smile, hairstyle, fringe and glasses if worn), apparent age and expression. Dress them in a clean, simple red-and-gold tang suit (bold flat gold trim, no tiny micro-embroidery) holding a simple round red lantern with human hands.',
     lettering:
       'Clean solid-gold Chinese brush calligraphy with crisp edges, solid flat gold fill and open counters in the upper reserved plaque area — no blurry glow or complex metallic noise.',
     avoid:
@@ -198,78 +198,78 @@ export const STYLES = [
   {
     id: 'style10',
     category: 'kids',
-    nameZh: '二頭身寶貝',
-    nameEn: '2-Head Baby',
-    captionZh: '大桔賀歲 × 簡約二頭身寶貝',
-    captionEn: 'Lucky tangerine × clean 2-head baby',
+    nameZh: '金橘萌寶',
+    nameEn: 'Golden Tangerine',
+    captionZh: '暖金黃底 × 大桔二頭身（單人）',
+    captionEn: 'Imperial gold backdrop × lucky tangerine baby',
     image: 'assets/styles/pack-10.jpg',
     thumb: `assets/styles/pack-10-thumb.jpg?v=${CACHE}`,
     profileKey: 'chibi_baby',
     scene:
-      'Preserve a clean, uncluttered print-friendly vermilion-red background with a simple flat gold border frame and a few clean flat gold coin accents. Keep backgrounds solid and print-ready without tiny sparkles, heavy gradients or cluttered props.',
+      'Preserve the warm, vibrant Imperial Golden-Yellow solid background (#F2B63D) with a clean thin crimson inner border line and a few simple flat red-and-gold lucky coins. Keep the warm yellow-gold field full-bleed to all 4 edges with zero tiny sparkles, heavy gradients or cluttered props.',
     subject:
-      'Reimagine uploaded baby, toddler, child or family identities as true 2-head baby/toddler chibi human characters in a clean 2D flat/storybook vector style with bold outlines and soft chubby cheeks, preserving each child’s recognizable face shape, eyes, hairstyle, skin tone, expression and exact count. Dress them in a simple red-and-gold festive baby vest holding one large, clean-shaped orange lucky tangerine (大桔) with distinct human hands.',
+      'Reimagine the uploaded baby, toddler or child identity as a true 2-head baby/toddler chibi human character in a clean 2D flat/storybook vector style with bold outlines and soft chubby cheeks, preserving the child’s recognizable face shape, eyes, hairstyle, skin tone and expression. Dress them in a simple red-and-gold festive sleeveless vest holding one large, clean-shaped orange lucky tangerine (大桔) with distinct human hands.',
     lettering:
-      'Clean solid-gold rounded brush lettering with crisp print-ready edges in the upper reserved greeting area.',
+      'Clean bold crimson-red Chinese brush calligraphy with crisp print-ready edges in the upper reserved greeting area standing out strongly against the golden-yellow background.',
     avoid:
-      'No overly complex props, tiny busy patterns, tall realistic bodies, white backdrop, photographic paste-in, photo mat, merged faces, animal anatomy on children or leftover template subjects.',
+      'No switching the golden-yellow background back to plain red, no overly complex props, tall realistic bodies, white backdrop, photographic paste-in, animal anatomy on children or leftover template subjects.',
   },
   {
     id: 'style11',
     category: 'kids',
-    nameZh: '醒獅萌娃',
-    nameEn: 'Lion Cap Kid',
-    captionZh: '簡約醒獅帽 × 紅金波浪紋',
-    captionEn: 'Simple lion cap × clean gold waves',
+    nameZh: '醒獅孖寶',
+    nameEn: 'Lion Cap Duo',
+    captionZh: '瑞藍撞色 × 醒獅雙人版（雙人）',
+    captionEn: 'Indigo & crimson waves × lion cap duo (2-person)',
     image: 'assets/styles/pack-11.jpg',
     thumb: `assets/styles/pack-11-thumb.jpg?v=${CACHE}`,
-    profileKey: 'chibi_lion_kid',
+    profileKey: 'chibi_lion_duo',
     scene:
-      'Preserve a clean, print-ready solid crimson-red background with simple flat golden wave curves along the bottom edge and a clean gold border line. Maintain large, flat print-friendly color areas with no noisy textures or tiny floating particles.',
+      'Preserve the deep Festive Royal Indigo-Blue solid background (#1B365D) with bold flat vermilion-red and warm cream-gold auspicious wave/cloud patterns across the bottom and a clean gold border line. Maintain large, flat print-friendly GuoChao color blocks reaching all 4 edges.',
     subject:
-      'Reimagine every uploaded child or family member as a cute 2.5-head flat/2D chibi human character wearing a simplified, bold-lined cute white-and-red lion-dance cap resting on top of the head (keeping the child’s entire face, eyebrows, eyes, smile and hair bangs clearly visible) and a clean red festive jacket with simple flat gold trim. Preserve each child’s exact facial likeness, hairstyle and person count.',
+      'TWO-PERSON DUO COMPOSITION (雙人醒獅版): Reimagine the uploaded two children/siblings/family members side-by-side (or if only 1 person is uploaded, pair them with a joyful festive sibling/companion alongside them) as cute 2.5-head flat/2D chibi human characters wearing simplified, bold-lined cute white-and-red lion-dance caps resting on top of their heads (keeping each person’s entire face, eyebrows, eyes, smile and hair bangs clearly visible) and clean red festive Tang jackets, smiling and waving together.',
     lettering:
-      'Crisp solid-gold brush calligraphy centered in the upper reserved greeting area, high contrast and print-friendly.',
+      'Crisp warm cream-gold Chinese brush calligraphy centered in the upper indigo sky area, high contrast and print-friendly.',
     avoid:
-      'No overly ornate multi-layered lion bristles, no covering the child’s face or hair, no busy background buildings, no white backdrop, no photorealistic cutouts or animal paws on children.',
+      'No switching the royal indigo background to red, no covering faces with lion masks, no merging the two characters into one face, no white backdrop, no photorealistic cutouts or animal paws on humans.',
   },
   {
     id: 'style12',
     category: 'kids',
-    nameZh: '小財神寶貝',
-    nameEn: 'Fortune Ingot Kid',
-    captionZh: '簡約金元寶 × 招財喜慶童裝',
-    captionEn: 'Clean gold ingot × festive fortune outfit',
+    nameZh: '粉桃財神',
+    nameEn: 'Peach Blossom Ingot',
+    captionZh: '蜜桃粉底 × 金元寶萌娃（單人）',
+    captionEn: 'Peach-pink medallion × gold ingot kid (solo)',
     image: 'assets/styles/pack-12.jpg',
     thumb: `assets/styles/pack-12-thumb.jpg?v=${CACHE}`,
     profileKey: 'chibi_fortune_kid',
     scene:
-      'Preserve a clean, print-friendly solid crimson-red background with simple flat gold corner ornaments and a minimal gold frame. Avoid cluttered piles of coins or complex lighting gradients so the design prints cleanly.',
+      'Preserve the warm Blossom Peach-Pink / Coral-Rose solid background (#E86272) featuring a large clean cream-and-gold circular medallion frame in the middle and simple 5-petal flat pink plum blossoms at the four corners. Keep all color blocks flat, crisp and print-ready.',
     subject:
-      'Reimagine every uploaded child or family member as a cute 2.5-head flat/2D chibi human character with bold clean outlines, wearing a simple red-and-gold New Year outfit and a small round red mandarin cap (leaving hair bangs and full face visible), holding a single large, clean-shaped golden ingot (金元寶) in front of the chest with human hands. Preserve each child’s recognizable face, smile, glasses if worn, and exact count.',
+      'Reimagine the uploaded child as a cute 2.5-head flat/2D chibi human character inside the cream-gold medallion with bold clean outlines, wearing a festive New Year outfit and a small round red-and-gold cap (leaving hair bangs, braids/hairstyle and full face visible), holding a single large, clean-shaped golden sycee ingot (金元寶) in front of the chest with human hands.',
     lettering:
-      'Clean solid-gold Chinese brush calligraphy with crisp strokes in the upper reserved greeting area.',
+      'Clean cream-gold Chinese brush calligraphy with crisp strokes in the upper reserved peach-pink greeting area above the medallion.',
     avoid:
-      'No adult beard or adult god-of-wealth mask, no cluttered background props, no micro-patterns, no white backdrop, no photographic paste-in or animal features.',
+      'No adult beard or adult god-of-wealth mask, no cluttered background props, no micro-patterns, no white outer backdrop, no photographic paste-in or animal features.',
   },
   {
     id: 'style13',
     category: 'kids',
-    nameZh: '桃花迎春',
-    nameEn: 'Blossom Frame Kid',
-    captionZh: '簡約金圓框 × 桃花拜年萌娃',
-    captionEn: 'Simple gold medallion × blossom greeting',
+    nameZh: '親子拜年',
+    nameEn: 'Jade Arch Duo',
+    captionZh: '翡翠金窗 × 雙人拱手拜年（雙人）',
+    captionEn: 'Jade & gold archway × New Year greeting duo (2-person)',
     image: 'assets/styles/pack-13.jpg',
     thumb: `assets/styles/pack-13-thumb.jpg?v=${CACHE}`,
-    profileKey: 'chibi_blossom_kid',
+    profileKey: 'chibi_blossom_duo',
     scene:
-      'Preserve a clean, print-ready solid crimson-red background featuring a simple flat gold circular medallion ring in the center and a few clean, flat five-petal pink peach blossoms on the side. Keep all shapes simple, bold and uncluttered for clean commercial printing.',
+      'Preserve the Festive Jade-Emerald Green solid background (#1B5E4B) with a warm cream-and-gold traditional Chinese rounded archway window in the center, accented with simple flat coral-red hanging lanterns and pink peach blossoms at the upper corners. Keep all shapes simple, bold and uncluttered for clean commercial printing.',
     subject:
-      'Reimagine every uploaded child or family member as a cute 2.5-head flat/2D chibi human character framed by the gold medallion, making a cheerful two-hand Lunar New Year greeting gesture (拱手拜年) in a clean simple red-and-gold festive outfit. Preserve each child’s recognizable facial features, hairstyle, expression and exact person count.',
+      'TWO-PERSON FAMILY / SIBLING DUO COMPOSITION (雙人親子／孖寶拜年版): Inside the golden archway, reimagine the two uploaded people (parent & child, or older & younger sibling; if 1 person is uploaded, pair them with a loving parent/sibling companion) side-by-side as cute 2.5-head flat/2D chibi human characters wearing matching red-and-gold festive Tang outfits, making the cheerful two-hand Lunar New Year greeting gesture (拱手拜年) together while preserving each person’s recognizable facial features, hairstyle, glasses if worn, and relative height.',
     lettering:
-      'Clean solid-gold Chinese brush calligraphy centered in the upper reserved greeting area above the medallion.',
+      'Clean warm-gold Chinese brush calligraphy centered in the upper jade-green reserved greeting area above the archway.',
     avoid:
-      'No dense realistic floral branches, no complex shading or bokeh, no branches crossing the child’s face, no white backdrop, no photorealistic cutouts or animal anatomy.',
+      'No switching the jade-green background to plain red, no dense realistic floral branches crossing faces, no complex 3D bokeh, no white backdrop, no photorealistic cutouts or animal anatomy.',
   },
 ];
 
@@ -302,7 +302,7 @@ const KIDS_ANATOMY_ADAPTATION =
   'KIDS CHIBI PROPORTION AND FESTIVE CLOTHING ADAPTATION: reimagine uploaded children/family members with adorable chibi proportions (2–3 head chibi for Chibi Kids, true 2-head baby/toddler chibi for 2-Head Baby) with soft rounded limbs, visible human hands and fingers, and proper shoes. Dress every child in modest, festive Lunar New Year kids attire (embroidered red-and-gold tang suit, festive qipao, padded winter vest, auspicious collar or lion-dance cap framing the face without hiding eyebrows or hair). Never give children animal paws, fur, tails or adult model bodies.';
 
 const KIDS_STYLE_LOCKED =
-  'STYLE-LOCKED CHARACTER REPLACEMENT (PRINT-FRIENDLY CLEAN CHIBI): Keep a clean, uncluttered, print-ready 2D flat/cel-shaded Lunar New Year chibi visual language throughout (solid crimson-red background, bold clean outlines, simple flat color blocks, minimal flat gold motifs, zero tiny bokeh or complex micro-embroidery so it prints cleanly in CMYK). Uploaded photos supply child/family facial identity cues ONLY (facial landmarks, hairstyle, age and expression). Never copy any source-photo background or paste a photorealistic head onto a cartoon body; redraw face, hair, hands and simple festive clothing together in one unified, clean print-ready chibi illustration style.';
+  'STYLE-LOCKED CHARACTER REPLACEMENT (PRINT-FRIENDLY CLEAN CHIBI): Keep Image 1’s exact festive background color palette (whether crimson-red, imperial golden-yellow, royal indigo-blue, peach-coral pink, or jade-emerald green with gold archway) and its clean, uncluttered, print-ready 2D flat/cel-shaded Lunar New Year chibi visual language throughout (bold clean outlines, simple flat color blocks, zero tiny bokeh or complex micro-embroidery so it prints cleanly in CMYK). Uploaded photos supply child/family facial identity cues ONLY (facial landmarks, hairstyle, age and expression). For 2-person duo templates (醒獅孖寶 / 親子拜年), preserve the two-person side-by-side composition using the uploaded people. Never copy any source-photo background or paste a photorealistic head onto a cartoon body; redraw face, hair, hands and simple festive clothing together in one unified, clean print-ready chibi illustration style.';
 
 /**
  * Build a filled image-model prompt for a style (worker main-path spirit, simplified).

@@ -1,6 +1,6 @@
-import { t } from './i18n.js?v=20261022j';
-import { ensureAuth, setAuthLang } from './auth.js?v=20261022j';
-import { generatePacket, STYLE_IDS, STYLE_THUMBS, STYLE_IMAGES, STYLES, getStylesByCategory, PRINT_SPEC, exportPngWithBleed, exportPngWithDiecut, canvasWithDiecut } from './generate.js?v=20261022j';
+import { t } from './i18n.js?v=20261022k';
+import { ensureAuth, setAuthLang } from './auth.js?v=20261022k';
+import { generatePacket, STYLE_IDS, STYLE_THUMBS, STYLE_IMAGES, STYLES, getStylesByCategory, PRINT_SPEC, exportPngWithBleed, exportPngWithDiecut, canvasWithDiecut } from './generate.js?v=20261022k';
 
 const STYLE_LABEL_KEYS = {
   style01: 'styleStyle01',
