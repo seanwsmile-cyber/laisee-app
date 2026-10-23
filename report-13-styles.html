@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>e-print AI 利是封 — 13 款全風格實測生成報告</title>
+  <style>
+    :root {
+      --red: #b52a2d;
+      --gold: #e1bd62;
+      --cream: #f6efe4;
+      --ink: #1a1210;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px 16px 60px;
+      font-family: "Noto Sans TC", system-ui, sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+    }
+    .wrap { max-width: 1200px; margin: 0 auto; }
+    h1 { color: var(--red); text-align: center; margin-bottom: 6px; }
+    .sub { text-align: center; color: #5a4640; margin-bottom: 24px; }
+    .inputs {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+    .input-card {
+      background: #fff;
+      border: 1.5px solid rgba(181,42,45,0.22);
+      border-radius: 14px;
+      padding: 12px;
+      width: 240px;
+      text-align: center;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .input-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    h2 {
+      color: var(--red);
+      border-bottom: 2px solid var(--gold);
+      padding-bottom: 8px;
+      margin-top: 32px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1.5px solid rgba(181,42,45,0.2);
+      padding: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.07);
+    }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .card-title { font-weight: 700; color: var(--red); font-size: 1.05rem; }
+    .card-meta { font-size: 0.78rem; color: #6a5650; }
+    .pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .pair figure { margin: 0; text-align: center; }
+    .pair img {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid rgba(225,189,98,0.6);
+    }
+    .pair figcaption {
+      font-size: 0.72rem;
+      color: #6a5650;
+      margin-top: 4px;
+    }
+    .pair-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+    .pair-3 figure { margin: 0; text-align: center; }
+    .pair-3 img {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid rgba(225,189,98,0.6);
+    }
+    .pair-3 figcaption {
+      font-size: 0.72rem;
+      color: #6a5650;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>e-print AI 利是封 — 13 款全風格 AI 生成報告</h1>
+    <p class="sub">模型：bytedance-seed/seedream-5-0-lite · 13 / 13 全部成功生成</p>
+
+    <div class="inputs">
+      <div class="input-card">
+        <img src="./shots/report-13/input-pet.jpg" alt="毛孩測試原圖" />
+        <strong>🐾 毛孩測試原圖</strong>
+      </div>
+      <div class="input-card">
+        <img src="./shots/report-13/input-kid.jpg" alt="小朋友測試原圖" />
+        <strong>👶 小朋友測試原圖</strong>
+      </div>
+    </div>
+
+    <h2>🐾 小動物／毛孩專區（8 款：style01 – style08）</h2>
+    <div class="grid">
+      <div class="card"><div class="card-head"><span class="card-title">01 金光醒獅</span><span class="card-meta">賀詞：恭喜發財</span></div><div class="pair"><figure><img src="./shots/report-13/ref-style01.jpg?v=20261023j" /><figcaption>原設計範本</figcaption></figure><figure><img src="./shots/report-13/gen-style01.jpg?v=20261023j" /><figcaption>AI 生成結果</figcaption></figure></div></div>
+      <div class="card"><div class="card-head"><span class="card-title">02 牡丹富貴</span><span class="card-meta">賀詞：心想事成</span></div><div class="pair"><figure><img src="./shots/report-13/ref-style02.jpg?v=20261023j" /><figcaption>原設計範本</figcaption></figure><figure><img src="./shots/report-13/gen-style02.jpg?v=20261023j" /><figcaption>AI 生成結果</figcaption></figure></div></div>
+      <div class="card"><div class="card-head"><span class="card-title">03 雪庭柿語</span><span class="card-meta">賀詞：新年快樂</span></div><div class="pair"><figure><img src="./shots/report-13/ref-style03.jpg?v=20261023j" /><figcaption>原設計範本</figcaption></figure><figure><img src="./shots/report-13/gen-style03.jpg?v=20261023j" /><figcaption>AI 生成結果</figcaption></figure></div></div>
+      <div class="card"><div class="card-head"><span class="card-title">04 醒獅巡遊</span><span class="card-meta">賀詞：恭喜發財</span></div><div class="pair"><figure><img src="./shots/report-13/ref-style04.jpg?v=20261023j" /><figcaption>原設計範本</figcaption></figure><figure><img src="./shots/report-13/gen-style04.jpg?v=20261023j" /><figcaption>AI 生成結果</figcaption></figure></div></div>
+      <div class="card"><div class="card-head"><span class="card-title">05 紅韻燈籠</span><span class="card-meta">賀詞：肥肥白白</span></div><div class="pair"><figure><img src="./shots/report-13/ref-style05.jpg?v=20261023k" /><figcaption>原設計範本</figcaption></figure><figure><img src="./shots/report-13/gen-style05.jpg?v=20261023k" /><figcaption>✅ 新版：全身統一手繪水粉繪本風（無剪紙尖刺感）</figcaption></figure></div></div>
+      <div class="card"><div class="card-head"><span class="card-title">06 金庭暖陽</span><span class="card-meta">賀詞：罐罐常滿</span></div><div class="pair"><figure><img src="./shots/report-13/ref-style06.jpg?v=20261023j" /><figcaption>原設計範本</figcaption></figure><figure><img src="./shots/report-13/gen-style06.jpg?v=20261023j" /><figcaption>AI 生成結果</figcaption></figure></div></div>
+<div class="card"><div class="card-head"><span class="card-title">07 燈火許願</span><span class="card-meta">祝福語：大吉大利</span></div><div class="pair-3"><figure><img src="./shots/report-13/prev-style07.jpg?v=20261023j" /><figcaption>上一版（頭身唔夾，橘貓身）</figcaption></figure><figure><img src="./shots/report-13/ref-style07.jpg?v=20261023j" /><figcaption>原範本</figcaption></figure><figure><img src="./shots/report-13/gen-style07.jpg?v=20261023j" /><figcaption>✅ 新版：成隻同一毛色＋同一 3D 公仔質感</figcaption></figure></div></div>
+      <div class="card"><div class="card-head"><span class="card-title">08 煙花螢火</span><span class="card-meta">賀詞：新年快樂</span></div><div class="pair"><figure><img src="./shots/report-13/ref-style08.jpg?v=20261023j" /><figcaption>原設計範本</figcaption></figure><figure><img src="./shots/report-13/gen-style08.jpg?v=20261023j" /><figcaption>AI 生成結果</figcaption></figure></div></div>
+    </div>
+
+<h2>👶 小朋友／親子系列（5 款各用一種畫風：自然兒童比例＋插畫臉，唔再係真人樣）</h2>
+    <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));">
+<div class="card"><div class="card-head"><span class="card-title">09 朱紅祥雲｜手繪水彩繪本風</span><span class="card-meta">祝福語：恭喜發財</span></div><div class="pair-3"><figure><img src="./shots/report-13/prev-style09.jpg?v=20261023j" /><figcaption>上一版（大頭細身＋真人樣）</figcaption></figure><figure><img src="./shots/report-13/ref-style09.jpg?v=20261023j" /><figcaption>新範本（手繪水彩繪本風）</figcaption></figure><figure><img src="./shots/report-13/gen-style09.jpg?v=20261023j" /><figcaption>✅ 新版 AI 生成</figcaption></figure></div></div>
+<div class="card"><div class="card-head"><span class="card-title">10 金橘萌寶｜3D 動畫電影風</span><span class="card-meta">祝福語：快高長大</span></div><div class="pair-3"><figure><img src="./shots/report-13/prev-style10.jpg?v=20261023j" /><figcaption>上一版（大頭細身＋真人樣）</figcaption></figure><figure><img src="./shots/report-13/ref-style10.jpg?v=20261023j" /><figcaption>新範本（3D 動畫電影風）</figcaption></figure><figure><img src="./shots/report-13/gen-style10.jpg?v=20261023j" /><figcaption>✅ 新版 AI 生成</figcaption></figure></div></div>
+<div class="card"><div class="card-head"><span class="card-title">11 醒獅孖寶｜日系動漫插畫風</span><span class="card-meta">祝福語：聰明伶俐</span></div><div class="pair-3"><figure><img src="./shots/report-13/prev-style11.jpg?v=20261023j" /><figcaption>上一版（大頭細身＋真人樣）</figcaption></figure><figure><img src="./shots/report-13/ref-style11.jpg?v=20261023j" /><figcaption>新範本（日系動漫插畫風）</figcaption></figure><figure><img src="./shots/report-13/gen-style11.jpg?v=20261023j" /><figcaption>✅ 新版 AI 生成</figcaption></figure></div></div>
+<div class="card"><div class="card-head"><span class="card-title">12 粉桃財神｜新中式工筆國潮風</span><span class="card-meta">祝福語：學業進步</span></div><div class="pair-3"><figure><img src="./shots/report-13/prev-style12.jpg?v=20261023j" /><figcaption>上一版（大頭細身＋真人樣）</figcaption></figure><figure><img src="./shots/report-13/ref-style12.jpg?v=20261023j" /><figcaption>新範本（新中式工筆國潮風）</figcaption></figure><figure><img src="./shots/report-13/gen-style12.jpg?v=20261023j" /><figcaption>✅ 新版 AI 生成</figcaption></figure></div></div>
+<div class="card"><div class="card-head"><span class="card-title">13 親子拜年｜溫馨手繪繪本 × 翡翠庭園</span><span class="card-meta">祝福語：新年快樂</span></div><div class="pair-3"><figure><img src="./shots/report-13/prev-style13.jpg?v=20261023j" /><figcaption>上一版（大頭細身＋真人樣）</figcaption></figure><figure><img src="./shots/report-13/ref-style13.jpg?v=20261023j" /><figcaption>新範本（溫馨手繪繪本 × 翡翠庭園）</figcaption></figure><figure><img src="./shots/report-13/gen-style13.jpg?v=20261023j" /><figcaption>✅ 新版 AI 生成</figcaption></figure></div></div>
+    </div>
+  </div>
+</body>
+</html>

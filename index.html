@@ -11,8 +11,8 @@
   <link rel="apple-touch-icon" href="./favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./css/styles.css?v=20261022k" />
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@500;600;700&family=Zhi+Mang+Xing&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/styles.css?v=20261023n" />
 </head>
 <body>
   <div class="auth-gate" id="auth-gate" hidden aria-hidden="true">
@@ -69,29 +69,28 @@
         <div class="start-hero">
           <div class="hero-glow" aria-hidden="true"></div>
           <div class="hero-ornament" aria-hidden="true"></div>
-          <div class="hero-seal" aria-hidden="true"></div>
           <h1 id="start-title" data-i18n="brand">e-print AI 利是封</h1>
           <p class="hero-sub" data-i18n="brandSub">香港新年利是封設計器</p>
           <p class="hero-tagline" data-i18n="heroTagline">AI 度身利是封 · 可印 3.5×6.75 · 含出血下載</p>
           <ul class="hero-chips" data-i18n-aria="chipFeaturesAria" aria-label="產品特點">
-            <li class="hero-chip" data-i18n="chipAi">真 AI 出圖</li>
-            <li class="hero-chip" data-i18n="chipPrint">可印含出血</li>
-            <li class="hero-chip" data-i18n="chipStyles">十三款風格</li>
+            <li class="hero-chip" data-i18n="chipAi">上載相片即製</li>
+            <li class="hero-chip" data-i18n="chipStyles">13 款新春風格</li>
+            <li class="hero-chip" data-i18n="chipPrint">一鍵下載印製</li>
           </ul>
           <div class="hero-preview" data-i18n-aria="heroPreviewAria" aria-label="款式預覽">
             <p class="hero-preview-label" data-i18n="heroPreviewLabel">風格一覽</p>
             <div class="hero-preview-row" role="list">
               <figure class="hero-thumb" role="listitem">
-                <img src="assets/styles/front-01-thumb.jpg?v=20261022k" alt="" width="72" height="138" loading="lazy" decoding="async" />
+                <img src="assets/styles/front-01-thumb.jpg?v=20261022k" alt="" width="72" height="138" fetchpriority="high" decoding="async" />
               </figure>
               <figure class="hero-thumb" role="listitem">
-                <img src="assets/styles/front-03-thumb.jpg?v=20261022k" alt="" width="72" height="138" loading="lazy" decoding="async" />
+                <img src="assets/styles/front-03-thumb.jpg?v=20261022k" alt="" width="72" height="138" fetchpriority="high" decoding="async" />
               </figure>
               <figure class="hero-thumb" role="listitem">
-                <img src="assets/styles/pack-10-thumb.jpg?v=20261022k" alt="" width="72" height="138" loading="lazy" decoding="async" />
+                <img src="assets/styles/pack-10-thumb.jpg?v=20261022k" alt="" width="72" height="138" fetchpriority="high" decoding="async" />
               </figure>
               <figure class="hero-thumb hero-thumb--q" role="listitem">
-                <img src="assets/styles/pack-11-thumb.jpg?v=20261022k" alt="" width="72" height="138" loading="lazy" decoding="async" />
+                <img src="assets/styles/pack-11-thumb.jpg?v=20261022k" alt="" width="72" height="138" fetchpriority="high" decoding="async" />
               </figure>
             </div>
           </div>
@@ -104,7 +103,7 @@
               </button>
               <button type="button" class="mode-card" id="mode-card-kids" data-category="kids" aria-pressed="false">
                 <span class="mode-card-title" data-i18n="modeKidsTitle">👶 小朋友／親子</span>
-                <span class="mode-card-desc" data-i18n="modeKidsDesc">簡約易印 Q版 · 5 款童趣風格</span>
+                <span class="mode-card-desc" data-i18n="modeKidsDesc">單人・雙人多色易印 Q版 · 5 款風格</span>
               </button>
             </div>
           </div>
@@ -156,20 +155,35 @@
         </div>
       </section>
 
-      <!-- Step 5: Greeting -->
+      <!-- Step 5: Greeting & Family Surname -->
       <section class="screen" data-step="5" hidden aria-hidden="true" aria-labelledby="greeting-title">
-        <h2 id="greeting-title" class="section-title" data-i18n="greetingTitle">賀詞</h2>
-        <p class="section-hint" data-i18n="greetingHint">選擇或輸入利是封賀詞</p>
+        <h2 id="greeting-title" class="section-title" data-i18n="greetingTitle">賀詞與百家姓</h2>
+        <p class="section-hint" data-i18n="greetingHint">選擇或輸入利是封賀詞（共 16 款常用祝福語）</p>
         <div class="greeting-grid" id="greeting-grid" role="group"></div>
-        <div class="field hidden" id="custom-greeting-wrap">
-          <label for="custom-greeting" data-i18n="greetingCustom">自由輸入</label>
+        <div class="field" id="custom-greeting-wrap">
+          <label for="custom-greeting" data-i18n="greetingCustom">自訂賀詞（選填）</label>
           <input id="custom-greeting" type="text" maxlength="30" data-i18n-placeholder="greetingCustomPlaceholder" autocomplete="off" />
           <div class="char-count" id="custom-greeting-count">0/30</div>
         </div>
-        <div class="field">
-          <label for="message-input" data-i18n="messageLabel">短訊息（選填）</label>
-          <input id="message-input" type="text" maxlength="30" data-i18n-placeholder="messagePlaceholder" autocomplete="off" />
-          <div class="char-count" id="message-count">0/30</div>
+
+        <div class="surname-section" id="surname-section">
+          <div class="surname-header">
+            <h3 class="subsection-title" data-i18n="surnameSectionTitle">百家姓／姓氏利是（選填）</h3>
+            <span class="surname-badge" id="surname-preview-badge" data-i18n="surnameNoneBadge">不加姓氏</span>
+          </div>
+          <p class="section-hint surname-hint" data-i18n="surnameSectionHint">揀選香港常見百家姓或自訂輸入，可選單字、X氏、X府、X家（自動 180° 對位印於刀模封口蓋）</p>
+          <div class="surname-format-row" id="surname-format-row" role="group" aria-label="姓氏格式">
+            <button type="button" class="chip surname-fmt-chip" data-fmt="none" aria-pressed="true">不加姓氏</button>
+            <button type="button" class="chip surname-fmt-chip" data-fmt="char" aria-pressed="false">單字（陳）</button>
+            <button type="button" class="chip surname-fmt-chip" data-fmt="shi" aria-pressed="false">陳氏</button>
+            <button type="button" class="chip surname-fmt-chip" data-fmt="fu" aria-pressed="false">陳府</button>
+            <button type="button" class="chip surname-fmt-chip" data-fmt="jia" aria-pressed="false">陳家</button>
+          </div>
+          <div class="surname-grid" id="surname-grid" role="group" aria-label="常見百家姓"></div>
+          <div class="field" id="custom-surname-wrap" style="margin-top:10px;margin-bottom:0">
+            <label for="custom-surname" data-i18n="surnameCustomLabel">自訂其他姓氏／聯婚（如：司徒、陳李聯婚）</label>
+            <input id="custom-surname" type="text" maxlength="6" data-i18n-placeholder="surnameCustomPlaceholder" autocomplete="off" />
+          </div>
         </div>
       </section>
 
@@ -187,16 +201,12 @@
           <input id="tweak-input" type="text" data-i18n-placeholder="tweakPlaceholder" autocomplete="off" />
         </div>
         <div class="result-actions">
-          <button type="button" class="btn btn-gold" id="btn-regenerate" data-i18n="regenerate">再生成</button>
-          <div class="result-actions-row">
-            <button type="button" class="btn btn-primary" id="btn-download-diecut" data-i18n="downloadDiecut">下載全景刀模 PNG</button>
-            <button type="button" class="btn btn-secondary" id="btn-share" data-i18n="share">分享</button>
+          <button type="button" class="btn btn-primary btn-cart-cta" id="btn-add-to-cart" data-i18n="addToCart">🛒 加入購物車</button>
+          <div class="result-actions-secondary">
+            <button type="button" class="btn btn-gold" id="btn-regenerate" data-i18n="regenerate">重新生成</button>
+            <button type="button" class="btn btn-secondary" id="btn-restart" data-i18n="restart">返回第一步</button>
           </div>
-          <button type="button" class="btn btn-secondary" id="btn-download" data-i18n="downloadBleed">下載正面 PNG（含出血）</button>
-          <button type="button" class="btn btn-secondary" id="btn-download-trim" data-i18n="downloadTrim">下載正面 PNG（淨尺寸）</button>
-          <button type="button" class="btn btn-ghost" id="btn-restart" data-i18n="restart">重新開始</button>
         </div>
-        <p class="print-hint" data-i18n="printHint">含出血下載：1125×2100 px（3.75×7 in @ 300 dpi），中央 trim 區 1050×2025（3.5×6.75 in）。重要內容請留喺距 trim 邊緣約 0.15 in 安全區。淨尺寸下載為 1050×2025（無出血）。</p>
       </section>
     </main>
 
@@ -212,6 +222,6 @@
   </div>
   <div class="app-toast" id="app-toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="./js/app.js?v=20261022k"></script>
+  <script type="module" src="./js/app.js?v=20261023n"></script>
 </body>
 </html>

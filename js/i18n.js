@@ -6,9 +6,9 @@ export const translations = {
     heroTagline: 'AI 度身利是封 · 可印 3.5×6.75 · 含出血下載',
     heroPreviewLabel: '風格一覽',
     heroPreviewAria: '款式預覽',
-    chipAi: '真 AI 出圖',
-    chipPrint: '可印含出血',
-    chipStyles: '十三款風格',
+    chipAi: '上載相片即製',
+    chipPrint: '一鍵下載印製',
+    chipStyles: '13 款新春風格',
     chipFeaturesAria: '產品特點',
     modePickerLabel: '選擇設計對象',
     modePetTitle: '🐾 小動物／毛孩',
@@ -22,15 +22,29 @@ export const translations = {
     next: '下一步',
     agree: '同意',
     termsTitle: '使用條款',
-    termsBody: `請仔細閱讀以下條款：
+    termsBody: `請於使用本服務前仔細閱讀以下條款：
 
-1. 只上載您有權使用的相片。請確保相片為您本人擁有，或已取得權利人授權。
+1. 相片授權與未成年人保障
+您確認只上載由您本人擁有版權、或已獲權利人合法授權之相片。如上載包含未成年人（小朋友）之相片，您確認自己為其父母、法定監護人，或已獲其父母／法定監護人明確同意。
 
-2. 本服務僅供個人非商業用途。不得將生成的利是封用於商業販售或大規模印刷分發，除非另行取得授權。
+2. 禁止侵權及不當內容
+嚴禁上載未獲授權之他人或名人肖像、受版權或商標保護之第三方角色／標誌（如知名動漫或品牌圖案），以及任何色情、暴力、誹謗、違法或不雅內容（包括自訂賀詞及修改指示）。若因您上載之內容引致任何第三方索償或法律責任，概由您本人承擔全部責任。
 
-3. 當啟用 AI 生成時，您上載的相片會經本應用伺服器轉送至 AI 供應商（OpenRouter 及其上游圖像模型）以生成利是封。相片僅用於該次生成請求；本服務不會將相片另作他用或長期存檔（以目前實作為準）。若 AI 不可用或失敗，可能改以瀏覽器本地 Canvas 合成，此時相片可只在您的裝置上處理。
+3. 個人資料及私隱保護
+本服務按照香港《個人資料（私隱）條例》（第 486 章）處理資料。當啟用 AI 生成時，您上載之相片僅會即時傳送至第三方雲端 AI 圖像生成服務供應商以完成該次利是封生成；本服務不會永久儲存您的相片、不會將相片作其他商業用途，亦不會用於訓練 AI 模型。
 
-4. 按「同意」即表示您已閱讀、理解並接受以上全部條款。`,
+4. AI 生成效果免責聲明
+AI 圖像生成具隨機性，生成結果之人物五官、毛孩斑紋、肢體細節或畫面內之書法字體筆劃，未必與原圖或標準字型 100% 一致。您於下載或提交印刷前，有責任自行核對圖案及文字是否正確無誤。
+
+5. 印刷色差、出血位及裁切公差
+• 螢幕顯示（RGB 色光）與實際印刷品（CMYK 油墨）必然存在正常色差，螢幕預覽僅供參考，不能作為退貨或重印之標準。
+• 印刷裁切及刀模摺疊會有約 1–2mm 正常生產公差，請確保重要頭像及文字留於安全區內。
+
+6. 使用範圍與知識產權
+生成之利是封設計可供個人節慶派發及委託印刷（如經 e-print 印製利是封）使用；惟不得將 AI 生成圖檔本身作商業轉售、二次授權或註冊商標。
+
+7. 同意條款
+按「同意」即表示您已閱讀、理解並接受以上全部條款。`,
     termsScrollHint: '請捲動至最底以啟用「同意」',
     pickStyleTitle: '揀款式',
     pickStyleHint: '選擇利是封設計風格（直式 3.5×6.75／約 14:27）',
@@ -58,29 +72,57 @@ export const translations = {
     uploadTitle: '上載相片',
     uploadTitlePet: '上載毛孩／小動物相片',
     uploadTitleKids: '上載小朋友／親子相片',
-    uploadHint: '上載 1–5 張相，拖放或揀檔均可',
-    uploadHintPet: '上載 1–5 張清晰毛孩正面相，AI 會保留品種、毛色同斑紋',
-    uploadHintKids: '上載 1–5 張清晰小朋友正面相，AI 會保留五官笑容同髮型特徵',
+    uploadHint: '上載清晰相片，AI 會保留五官特徵',
+    uploadHintPet: '「單主角款式」請上載 1 張清晰毛孩正面相',
+    uploadHintPetDuo: '「雙主角款式」可上載 1–2 張毛孩相片（可加另一隻毛孩）',
+    uploadHintKids: '「單人款式」請上載 1 張小朋友清晰正面相',
+    uploadHintKidsDuo: '「雙人款式」可上載 1–2 張相片（可加另一位成員）',
     uploadDrop: '拖放相片到此處，或點擊揀檔',
     uploadAdd: '加另一個主體',
     uploadAddPet: '加另一隻毛孩',
     uploadAddKids: '加另一位成員',
-    uploadCount: '已上載 {n} / 5 張',
+    uploadCount: '已上載 {n} / {max} 位',
+    uploadLimitReached: '此款式為 {max} 人／主體設計，已達上限',
     uploadNeedOne: '請至少上載 1 張相片',
-    greetingTitle: '賀詞',
-    greetingHint: '選擇或輸入利是封賀詞',
+    greetingTitle: '賀詞與百家姓',
+    greetingHint: '選擇或輸入利是封賀詞（共 16 款常用祝福語）',
     greetingCongrats: '恭喜發財',
     greetingHappy: '新年快樂',
     greetingHealth: '身體健康',
+    greetingLucky: '大吉大利',
     greetingWish: '心想事成',
+    greetingAllWell: '萬事勝意',
     greetingChubby: '肥肥白白',
     greetingTreats: '罐罐常滿',
+    greetingSpirit: '龍馬精神',
+    greetingBoss: '主子萬歲',
+    greetingWealth: '招財進寶',
+    greetingStar: '吉星高照',
+    greetingPeace: '出入平安',
+    greetingAbundance: '年年有餘',
+    greetingSmile: '笑口常開',
+    greetingBliss: '幸福滿滿',
     greetingGrow: '快高長大',
     greetingSmart: '聰明伶俐',
     greetingStudy: '學業進步',
+    greetingObedient: '聽教聽話',
+    greetingLoved: '人見人愛',
+    greetingFamily: '闔家平安',
+    greetingGoldJade: '金玉滿堂',
     greetingHny: 'Happy New Year',
-    greetingCustom: '自由輸入',
-    greetingCustomPlaceholder: '輸入賀詞（最多 30 字）',
+    greetingCustom: '自訂賀詞（選填）',
+    greetingCustomPlaceholder: '自由輸入其他賀詞（最多 30 字）',
+    surnameSectionTitle: '百家姓／封口蓋姓氏（選填）',
+    surnameSectionHint: '揀選香港常見百家姓或自訂輸入，可選單字、X氏、X府、X家（自動 180° 對位印於刀模封口蓋）',
+    surnameNoneBadge: '封口蓋：不印姓氏',
+    surnamePreviewBadge: '封口蓋燙金：{s}（自動 180° 對位）',
+    surnameFmtNone: '不加姓氏',
+    surnameFmtChar: '單字（{s}）',
+    surnameFmtShi: '{s}氏',
+    surnameFmtFu: '{s}府',
+    surnameFmtJia: '{s}家',
+    surnameCustomLabel: '自訂其他姓氏／聯婚（如：司徒、陳李聯婚）',
+    surnameCustomPlaceholder: '輸入姓氏（最多 6 字，留空則用上方揀選）',
     messageLabel: '短訊息（選填）',
     messagePlaceholder: '輸入短訊息（最多 30 字）',
     generate: '生成利是封',
@@ -89,14 +131,16 @@ export const translations = {
     resultHint: '可切換「全景刀模圖／正面 AI 圖」，支援縮放及移動預覽',
     viewDiecut: '🗂️ 全景刀模展開圖',
     viewFront: '🖼️ 正面 AI 圖',
-    tweakLabel: '修改指示（再生成時套用）',
+    tweakLabel: '修改指示（重新生成時套用）',
     tweakPlaceholder: '例如：多啲金色、賀詞再大啲…',
-    regenerate: '再生成',
+    regenerate: '🔄 重新生成',
+    addToCart: '🛒 加入購物車',
+    addedToCart: '已加入購物車！',
     download: '下載 PNG（含出血）',
     downloadDiecut: '下載全景刀模 PNG',
     downloadBleed: '下載正面 PNG（含出血）',
     downloadTrim: '下載正面 PNG（淨尺寸）',
-    restart: '重新開始',
+    restart: '↩️ 返回第一步',
     backSurname: '背面姓氏',
     backSurnameHint: '展開後可為利是封背面加上書法姓氏',
     surnamePlaceholder: '輸入姓氏（1–2 字）',
@@ -137,9 +181,9 @@ export const translations = {
     heroTagline: 'AI-tailored laisee · Print 3.5×6.75 · Bleed download',
     heroPreviewLabel: 'Style preview',
     heroPreviewAria: 'Style preview',
-    chipAi: 'Real AI art',
-    chipPrint: 'Print-ready bleed',
-    chipStyles: '13 styles',
+    chipAi: 'Upload & Create',
+    chipPrint: '1-Click Print Ready',
+    chipStyles: '13 Festive Styles',
     chipFeaturesAria: 'Product highlights',
     modePickerLabel: 'Choose who this laisee is for',
     modePetTitle: '🐾 Pets & Animals',
@@ -153,15 +197,29 @@ export const translations = {
     next: 'Next',
     agree: 'Agree',
     termsTitle: 'Terms of Use',
-    termsBody: `Please read the following carefully:
+    termsBody: `Please read the following terms carefully before using this service:
 
-1. Only upload photos you have the right to use. Ensure you own them or have permission from the rights holder.
+1. Photo Rights & Minors' Consent
+You confirm that you only upload photos you own or have permission to use. If uploading photos of minors (children), you confirm that you are their parent/legal guardian or have obtained explicit consent from their parent/legal guardian.
 
-2. This service is for personal, non-commercial use only. Do not sell or mass-distribute generated packets without separate authorization.
+2. Prohibited Content & Indemnity
+Do not upload unauthorized portraits of others or celebrities, copyrighted/trademarked third-party characters or logos, or any obscene, violent, defamatory, or unlawful content (including custom greetings and prompts). You agree to bear full legal responsibility and indemnify e-print against any third-party claims arising from content you upload.
 
-3. When AI generation is enabled, photos you upload are sent through this app's server to the AI provider (OpenRouter and its upstream image models) to generate your red packet. Photos are used only for that generation request; this service does not keep them for other purposes or long-term storage (as implemented today). If AI is unavailable or fails, the app may fall back to in-browser Canvas compositing, in which case photos can stay on your device.
+3. Privacy & Data Protection
+Personal data is handled in accordance with the Hong Kong Personal Data (Privacy) Ordinance (Cap. 486). When AI generation is enabled, uploaded photos are transmitted solely to our third-party cloud AI image provider to fulfill that single generation request. Photos are not permanently stored, repurposed, or used to train AI models.
 
-4. By tapping Agree, you confirm that you have read, understood, and accept all of the above terms.`,
+4. AI Output Disclaimer
+AI image generation is probabilistic. Facial features, pet markings, fine details, or AI-rendered Chinese calligraphy strokes may not be 100% identical to the original photo or standard fonts. Please carefully review all graphics and text before downloading or submitting for printing.
+
+5. Printing Color, Bleed & Trim Tolerances
+• Screen previews (RGB) and physical prints (CMYK) will naturally exhibit normal color variance; screen colors cannot be used as a basis for returns or reprints.
+• Physical trimming and die-cut folding have a normal tolerance of ~1–2mm. Keep key faces and text within the safe zone.
+
+6. Permitted Use
+Generated designs may be used for personal festive gifting and custom printing (such as ordering printed red packets via e-print), but the digital artwork itself may not be resold, relicensed, or registered as a trademark.
+
+7. Acceptance
+By tapping Agree, you confirm that you have read, understood, and accept all of the above terms.`,
     termsScrollHint: 'Scroll to the bottom to enable Agree',
     pickStyleTitle: 'Choose a Style',
     pickStyleHint: 'Pick a red packet style (vertical 3.5×6.75 / ~14:27)',
@@ -189,29 +247,57 @@ export const translations = {
     uploadTitle: 'Upload Photos',
     uploadTitlePet: 'Upload Pet Photos',
     uploadTitleKids: 'Upload Kids / Family Photos',
-    uploadHint: 'Upload 1–5 photos via drag-and-drop or file picker',
-    uploadHintPet: 'Upload 1–5 clear pet photos; AI keeps breed, coat color & markings',
-    uploadHintKids: 'Upload 1–5 clear child photos; AI keeps face, smile & hairstyle',
+    uploadHint: 'Upload clear photos; AI preserves facial likeness',
+    uploadHintPet: 'Solo pet style: please upload 1 clear pet photo',
+    uploadHintPetDuo: 'Duo style: upload 1–2 pet photos (click "Add another pet")',
+    uploadHintKids: 'Solo style: please upload 1 clear child photo',
+    uploadHintKidsDuo: '2-person style: upload 1–2 photos (click "Add another child")',
     uploadDrop: 'Drop photos here, or click to choose',
     uploadAdd: 'Add another subject',
     uploadAddPet: 'Add another pet',
     uploadAddKids: 'Add another child',
-    uploadCount: '{n} / 5 uploaded',
+    uploadCount: '{n} / {max} uploaded',
+    uploadLimitReached: 'This style is designed for {max} subject(s)',
     uploadNeedOne: 'Please upload at least 1 photo',
-    greetingTitle: 'Greeting',
-    greetingHint: 'Choose or type a greeting',
+    greetingTitle: 'Greeting & Family Surname',
+    greetingHint: 'Choose from 16 festive greetings or type your own',
     greetingCongrats: '恭喜發財',
     greetingHappy: '新年快樂',
     greetingHealth: '身體健康',
+    greetingLucky: '大吉大利',
     greetingWish: '心想事成',
+    greetingAllWell: '萬事勝意',
     greetingChubby: '肥肥白白',
     greetingTreats: '罐罐常滿',
+    greetingSpirit: '龍馬精神',
+    greetingBoss: '主子萬歲',
+    greetingWealth: '招財進寶',
+    greetingStar: '吉星高照',
+    greetingPeace: '出入平安',
+    greetingAbundance: '年年有餘',
+    greetingSmile: '笑口常開',
+    greetingBliss: '幸福滿滿',
     greetingGrow: '快高長大',
     greetingSmart: '聰明伶俐',
     greetingStudy: '學業進步',
+    greetingObedient: '聽教聽話',
+    greetingLoved: '人見人愛',
+    greetingFamily: '闔家平安',
+    greetingGoldJade: '金玉滿堂',
     greetingHny: 'Happy New Year',
-    greetingCustom: 'Custom',
-    greetingCustomPlaceholder: 'Enter greeting (max 30 chars)',
+    greetingCustom: 'Custom Greeting (optional)',
+    greetingCustomPlaceholder: 'Enter custom greeting (max 30 chars)',
+    surnameSectionTitle: 'Top Flap Surname / 百家姓 (Optional)',
+    surnameSectionHint: 'Pick a common HK surname or type your own (auto 180°-rotated on the top die-cut flap)',
+    surnameNoneBadge: 'Top flap: No surname',
+    surnamePreviewBadge: 'Top flap gold seal: {s} (180° aligned)',
+    surnameFmtNone: 'No Surname',
+    surnameFmtChar: 'Single ({s})',
+    surnameFmtShi: '{s}氏 ({s} Clan)',
+    surnameFmtFu: '{s}府 ({s} Residence)',
+    surnameFmtJia: '{s}家 ({s} Family)',
+    surnameCustomLabel: 'Custom Surname / Joint Surname (e.g. 司徒, 陳李聯婚)',
+    surnameCustomPlaceholder: 'Enter surname (max 6 chars)',
     messageLabel: 'Short message (optional)',
     messagePlaceholder: 'Enter a short message (max 30 chars)',
     generate: 'Generate Packet',
@@ -222,12 +308,14 @@ export const translations = {
     viewFront: '🖼️ Front AI Artwork',
     tweakLabel: 'Tweak notes (applied on regenerate)',
     tweakPlaceholder: 'e.g. more gold, larger greeting…',
-    regenerate: 'Regenerate',
+    regenerate: '🔄 Regenerate',
+    addToCart: '🛒 Add to Cart',
+    addedToCart: 'Added to cart!',
     download: 'Download PNG (with bleed)',
     downloadDiecut: 'Download Full Die-Cut PNG',
     downloadBleed: 'Download Front PNG (with bleed)',
     downloadTrim: 'Download Front PNG (trim only)',
-    restart: 'Start Over',
+    restart: '↩️ Back to Step 1',
     backSurname: 'Back — Surname',
     backSurnameHint: 'Add a calligraphic surname on the red back',
     surnamePlaceholder: 'Surname (1–2 chars)',

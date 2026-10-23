@@ -1,6 +1,6 @@
-import { t } from './i18n.js?v=20261022k';
-import { ensureAuth, setAuthLang } from './auth.js?v=20261022k';
-import { generatePacket, STYLE_IDS, STYLE_THUMBS, STYLE_IMAGES, STYLES, getStylesByCategory, PRINT_SPEC, exportPngWithBleed, exportPngWithDiecut, canvasWithDiecut } from './generate.js?v=20261022k';
+import { t } from './i18n.js?v=20261023n';
+import { ensureAuth, setAuthLang } from './auth.js?v=20261023d';
+import { generatePacket, STYLE_IDS, STYLE_THUMBS, STYLE_IMAGES, STYLES, getStylesByCategory, getStyleMaxSubjects, PRINT_SPEC, exportPngWithBleed, exportPngWithDiecut, canvasWithDiecut } from './generate.js?v=20261023n';
 
 const STYLE_LABEL_KEYS = {
   style01: 'styleStyle01',
@@ -23,11 +23,19 @@ const GREETING_PRESETS_BY_CATEGORY = {
     { id: 'congrats', key: 'greetingCongrats', value: '恭喜發財' },
     { id: 'happy', key: 'greetingHappy', value: '新年快樂' },
     { id: 'health', key: 'greetingHealth', value: '身體健康' },
+    { id: 'lucky', key: 'greetingLucky', value: '大吉大利' },
+    { id: 'wish', key: 'greetingWish', value: '心想事成' },
+    { id: 'allwell', key: 'greetingAllWell', value: '萬事勝意' },
     { id: 'chubby', key: 'greetingChubby', value: '肥肥白白' },
     { id: 'treats', key: 'greetingTreats', value: '罐罐常滿' },
-    { id: 'wish', key: 'greetingWish', value: '心想事成' },
-    { id: 'hny', key: 'greetingHny', value: 'Happy New Year' },
-    { id: 'custom', key: 'greetingCustom', value: '' },
+    { id: 'spirit', key: 'greetingSpirit', value: '龍馬精神' },
+    { id: 'boss', key: 'greetingBoss', value: '主子萬歲' },
+    { id: 'wealth', key: 'greetingWealth', value: '招財進寶' },
+    { id: 'star', key: 'greetingStar', value: '吉星高照' },
+    { id: 'peace', key: 'greetingPeace', value: '出入平安' },
+    { id: 'abundance', key: 'greetingAbundance', value: '年年有餘' },
+    { id: 'smile', key: 'greetingSmile', value: '笑口常開' },
+    { id: 'bliss', key: 'greetingBliss', value: '幸福滿滿' },
   ],
   kids: [
     { id: 'congrats', key: 'greetingCongrats', value: '恭喜發財' },
@@ -36,10 +44,25 @@ const GREETING_PRESETS_BY_CATEGORY = {
     { id: 'study', key: 'greetingStudy', value: '學業進步' },
     { id: 'happy', key: 'greetingHappy', value: '新年快樂' },
     { id: 'health', key: 'greetingHealth', value: '身體健康' },
-    { id: 'hny', key: 'greetingHny', value: 'Happy New Year' },
-    { id: 'custom', key: 'greetingCustom', value: '' },
+    { id: 'lucky', key: 'greetingLucky', value: '大吉大利' },
+    { id: 'wish', key: 'greetingWish', value: '心想事成' },
+    { id: 'allwell', key: 'greetingAllWell', value: '萬事勝意' },
+    { id: 'obedient', key: 'greetingObedient', value: '聽教聽話' },
+    { id: 'loved', key: 'greetingLoved', value: '人見人愛' },
+    { id: 'smile', key: 'greetingSmile', value: '笑口常開' },
+    { id: 'spirit', key: 'greetingSpirit', value: '龍馬精神' },
+    { id: 'family', key: 'greetingFamily', value: '闔家平安' },
+    { id: 'goldjade', key: 'greetingGoldJade', value: '金玉滿堂' },
+    { id: 'peace', key: 'greetingPeace', value: '出入平安' },
   ],
 };
+
+const COMMON_SURNAMES = [
+  '陳', '李', '黃', '張', '林', '梁', '吳', '劉', '何',
+  '周', '鄭', '蔡', '楊', '許', '鄧', '馮', '曾', '謝',
+  '馬', '胡', '蘇', '葉', '盧', '潘', '朱', '鍾', '袁',
+  '高', '羅', '郭', '莫', '余', '伍', '彭', '司徒', '歐陽',
+];
 
 function getGreetingPresets(cat = state.category) {
   return GREETING_PRESETS_BY_CATEGORY[cat === 'kids' ? 'kids' : 'pet'];
@@ -55,6 +78,9 @@ const state = {
   photos: [], // { id, url, img }
   greetingId: 'congrats',
   customGreeting: '',
+  surnameChar: '',
+  customSurname: '',
+  surnameFormat: 'none', // 'none' | 'char' | 'shi' | 'fu' | 'jia'
   message: '',
   tweak: '',
   previewView: 'diecut', // 'diecut' | 'front'
@@ -96,19 +122,10 @@ function applyI18n() {
   $$('[data-i18n-aria]').forEach((el) => {
     el.setAttribute('aria-label', tr(el.getAttribute('data-i18n-aria')));
   });
-  // style card labels + captions
-  $$('.style-card').forEach((card) => {
-    const id = card.dataset.style;
-    const styleMeta = STYLES.find((s) => s.id === id);
-    const name = tr(STYLE_LABEL_KEYS[id]);
-    const label = card.querySelector('.label');
-    if (label) label.textContent = name;
-    const thumb = card.querySelector('.style-thumb');
-    if (thumb) thumb.alt = name;
-    card.setAttribute('aria-label', name);
-    const caption = card.querySelector('.caption');
-    if (caption && styleMeta) {
-      caption.textContent = state.lang === 'en' ? styleMeta.captionEn : styleMeta.captionZh;
+  // style card labels + captions (both mounted and cached)
+  STYLES.forEach((styleMeta) => {
+    if (styleCardCache.has(styleMeta.id)) {
+      getOrCreateStyleCard(styleMeta);
     }
   });
   // photo remove buttons
@@ -121,14 +138,24 @@ function applyI18n() {
     const preset = presets.find((p) => p.id === chip.dataset.gid);
     if (preset) chip.textContent = tr(preset.key);
   });
+  syncSurnameUI();
   syncCategoryCopy();
   updateUploadCount();
   updateStepIndicator();
   document.documentElement.lang = state.lang === 'en' ? 'en' : 'zh-Hant';
 }
 
+function currentMaxPhotos() {
+  if (!state.style) return 1;
+  const styleMeta = STYLES.find((s) => s.id === state.style);
+  return styleMeta?.maxSubjects || 1;
+}
+
 function syncCategoryCopy() {
   const isKids = state.category === 'kids';
+  const maxSubs = currentMaxPhotos();
+  const isDuo = maxSubs > 1;
+
   const styleHint = $('#pick-style-hint');
   if (styleHint) {
     const key = isKids ? 'pickStyleHintKids' : 'pickStyleHintPet';
@@ -143,7 +170,9 @@ function syncCategoryCopy() {
   }
   const upHint = $('#upload-hint');
   if (upHint) {
-    const key = isKids ? 'uploadHintKids' : 'uploadHintPet';
+    const key = isKids
+      ? (isDuo ? 'uploadHintKidsDuo' : 'uploadHintKids')
+      : (isDuo ? 'uploadHintPetDuo' : 'uploadHintPet');
     upHint.setAttribute('data-i18n', key);
     upHint.textContent = tr(key);
   }
@@ -152,6 +181,13 @@ function syncCategoryCopy() {
     const key = isKids ? 'uploadAddKids' : 'uploadAddPet';
     addBtn.setAttribute('data-i18n', key);
     addBtn.textContent = tr(key);
+    // Only show "加另一個主體 / 成員" button if this style supports 2 subjects
+    addBtn.classList.toggle('hidden', !isDuo);
+    addBtn.disabled = state.photos.length >= maxSubs;
+  }
+  const fileInput = $('#file-input');
+  if (fileInput) {
+    fileInput.multiple = isDuo;
   }
 }
 
@@ -220,37 +256,67 @@ function setLang(lang) {
   updateFooter();
 }
 
-function buildStyleGrid() {
-  const grid = $('#style-grid');
-  grid.innerHTML = '';
-  const visibleStyles = getStylesByCategory(state.category);
-  visibleStyles.forEach((styleMeta) => {
-    const id = styleMeta.id;
-    const btn = document.createElement('button');
+const preloadedImages = new Map();
+const styleCardCache = new Map();
+
+function preloadImageUrl(url) {
+  if (!url || preloadedImages.has(url)) return;
+  const img = new Image();
+  img.decoding = 'async';
+  img.src = url;
+  img.decode?.().catch(() => {});
+  preloadedImages.set(url, img);
+}
+
+function getOrCreateStyleCard(styleMeta) {
+  const id = styleMeta.id;
+  let btn = styleCardCache.get(id);
+  if (!btn) {
+    btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'style-card';
     btn.dataset.style = id;
     btn.dataset.category = styleMeta.category;
-    btn.setAttribute('aria-pressed', state.style === id ? 'true' : 'false');
-    btn.setAttribute('aria-label', tr(STYLE_LABEL_KEYS[id]));
     const img = document.createElement('img');
     img.className = 'style-thumb';
-    img.alt = tr(STYLE_LABEL_KEYS[id]);
     img.decoding = 'async';
-    img.loading = 'lazy';
-    img.src = (STYLE_THUMBS[id] || STYLE_IMAGES[id] || '').replace(/(\?v=)\w+/, '$1ratio') || STYLE_IMAGES[id];
+    img.loading = 'eager';
+    img.src = STYLE_THUMBS[id] || STYLE_IMAGES[id];
+    img.decode?.().catch(() => {});
     const label = document.createElement('span');
     label.className = 'label';
-    label.textContent = tr(STYLE_LABEL_KEYS[id]);
     const caption = document.createElement('span');
     caption.className = 'caption';
-    caption.textContent = styleMeta
-      ? (state.lang === 'en' ? styleMeta.captionEn : styleMeta.captionZh)
-      : '';
     btn.append(img, label, caption);
     btn.addEventListener('click', () => selectStyle(id));
-    grid.appendChild(btn);
+    styleCardCache.set(id, btn);
+  }
+  const name = tr(STYLE_LABEL_KEYS[id]);
+  btn.setAttribute('aria-pressed', state.style === id ? 'true' : 'false');
+  btn.setAttribute('aria-label', name);
+  const img = btn.querySelector('.style-thumb');
+  if (img) img.alt = name;
+  const label = btn.querySelector('.label');
+  if (label) label.textContent = name;
+  const caption = btn.querySelector('.caption');
+  if (caption) {
+    caption.textContent = state.lang === 'en' ? styleMeta.captionEn : styleMeta.captionZh;
+  }
+  return btn;
+}
+
+function preloadAllStyleThumbs() {
+  STYLES.forEach((styleMeta) => {
+    preloadImageUrl(STYLE_THUMBS[styleMeta.id] || STYLE_IMAGES[styleMeta.id]);
+    getOrCreateStyleCard(styleMeta);
   });
+}
+
+function buildStyleGrid() {
+  const grid = $('#style-grid');
+  grid.replaceChildren(
+    ...getStylesByCategory(state.category).map((styleMeta) => getOrCreateStyleCard(styleMeta))
+  );
 }
 
 function selectCategory(category) {
@@ -282,9 +348,21 @@ function selectCategory(category) {
 
 function selectStyle(id) {
   state.style = id;
+  if (STYLE_IMAGES[id]) preloadImageUrl(STYLE_IMAGES[id]);
   $$('.style-card').forEach((c) => {
     c.setAttribute('aria-pressed', c.dataset.style === id ? 'true' : 'false');
   });
+
+  // Clamp photos if switched from a 2-person style to a 1-person solo style
+  const maxSubs = currentMaxPhotos();
+  if (state.photos.length > maxSubs) {
+    const removed = state.photos.splice(maxSubs);
+    removed.forEach((p) => URL.revokeObjectURL(p.url));
+    renderThumbs();
+  }
+
+  syncCategoryCopy();
+  updateUploadCount();
   updateFooter();
 }
 
@@ -295,7 +373,7 @@ function selectAspect(_aspect) {
 
 function updateUploadCount() {
   const el = $('#upload-count');
-  if (el) el.textContent = tr('uploadCount', { n: state.photos.length });
+  if (el) el.textContent = tr('uploadCount', { n: state.photos.length, max: currentMaxPhotos() });
 }
 
 function renderThumbs() {
@@ -317,7 +395,13 @@ function renderThumbs() {
     grid.appendChild(wrap);
   });
   updateUploadCount();
-  $('#btn-add-photo').disabled = state.photos.length >= 5;
+
+  const maxSubs = currentMaxPhotos();
+  const addBtn = $('#btn-add-photo');
+  if (addBtn) {
+    addBtn.classList.toggle('hidden', maxSubs <= 1);
+    addBtn.disabled = state.photos.length >= maxSubs;
+  }
   updateFooter();
 }
 
@@ -336,7 +420,12 @@ function loadImageFromFile(file) {
 
 async function addFiles(fileList) {
   const files = [...fileList].filter((f) => f.type.startsWith('image/'));
-  const room = 5 - state.photos.length;
+  const maxSubs = currentMaxPhotos();
+  const room = maxSubs - state.photos.length;
+  if (room <= 0) {
+    toast(tr('uploadLimitReached', { max: maxSubs }), { error: true });
+    return;
+  }
   for (const f of files.slice(0, room)) {
     try {
       const item = await loadImageFromFile(f);
@@ -358,11 +447,27 @@ function removePhoto(id) {
 }
 
 function currentGreeting() {
-  if (state.greetingId === 'custom') {
-    return (state.customGreeting || '').trim().slice(0, 30);
-  }
+  const customText = (state.customGreeting || '').trim().slice(0, 30);
+  if (customText) return customText;
   const p = getGreetingPresets().find((g) => g.id === state.greetingId);
   return p?.value || '恭喜發財';
+}
+
+function baseSurname() {
+  const custom = (state.customSurname || '').trim().slice(0, 6);
+  if (custom) return custom;
+  return (state.surnameChar || '').trim();
+}
+
+function currentSurname() {
+  const base = baseSurname();
+  if (!base || state.surnameFormat === 'none') return '';
+  // If user entered a full phrase like 陳李聯婚 or 陳府 directly in custom input, don't double-suffix
+  if (base.length >= 3 || /[氏府家]$/.test(base)) return base;
+  if (state.surnameFormat === 'shi') return `${base}氏`;
+  if (state.surnameFormat === 'fu') return `${base}府`;
+  if (state.surnameFormat === 'jia') return `${base}家`;
+  return base;
 }
 
 function setLoading(on) {
@@ -412,6 +517,7 @@ async function runGenerate() {
       aspect: 'packet',
       photos: state.photos.map((p) => p.img),
       greeting,
+      surname: currentSurname(),
       message: state.message.trim().slice(0, 30),
       tweak: state.tweak,
       // Keys live on the server (.env). Browser only hits /api/generate.
@@ -451,8 +557,11 @@ const preview = {
 function getActivePreviewCanvas() {
   if (!state.result) return null;
   if (state.previewView === 'diecut') {
-    if (!state.result.diecutCanvas && state.result.canvas) {
-      state.result.diecutCanvas = canvasWithDiecut(state.result.canvas, { styleId: state.style || 'style01' });
+    if (state.result.canvas) {
+      state.result.diecutCanvas = canvasWithDiecut(state.result.canvas, {
+        styleId: state.style || 'style01',
+        surname: currentSurname(),
+      });
     }
     return state.result.diecutCanvas || state.result.canvas;
   }
@@ -676,7 +785,10 @@ async function shareResult() {
 async function downloadResultDiecut() {
   if (!state.result?.canvas) return;
   try {
-    const { blob } = await exportPngWithDiecut(state.result.canvas, { styleId: state.style || 'style01' });
+    const { blob } = await exportPngWithDiecut(state.result.canvas, {
+      styleId: state.style || 'style01',
+      surname: currentSurname(),
+    });
     if (!blob) return;
     triggerPngDownload(blob, `laisee-2026-${downloadStamp()}-diecut.png`);
   } catch (err) {
@@ -714,17 +826,22 @@ function restart() {
     photos: [],
     greetingId: 'congrats',
     customGreeting: '',
+    surnameChar: '',
+    customSurname: '',
+    surnameFormat: 'none',
     message: '',
     tweak: '',
     result: null,
   });
   $('#terms-scroll').scrollTop = 0;
-  $('#custom-greeting-wrap').classList.add('hidden');
-  $('#custom-greeting').value = '';
-  $('#message-input').value = '';
-  $('#tweak-input').value = '';
+  if ($('#custom-greeting')) $('#custom-greeting').value = '';
+  if ($('#custom-greeting-count')) $('#custom-greeting-count').textContent = '0/30';
+  if ($('#custom-surname')) $('#custom-surname').value = '';
+  if ($('#message-input')) $('#message-input').value = '';
+  if ($('#tweak-input')) $('#tweak-input').value = '';
   selectAspect('2:3');
   selectCategory('pet');
+  syncSurnameUI();
   renderThumbs();
   showScreen(1);
 }
@@ -789,43 +906,164 @@ function renderGreetingChips() {
   if (!grid) return;
   grid.innerHTML = '';
   const presets = getGreetingPresets();
+  const hasCustom = Boolean((state.customGreeting || '').trim());
   presets.forEach((g) => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'chip greeting-chip';
     btn.dataset.gid = g.id;
     btn.textContent = tr(g.key);
-    btn.setAttribute('aria-pressed', g.id === state.greetingId ? 'true' : 'false');
+    btn.setAttribute('aria-pressed', !hasCustom && g.id === state.greetingId ? 'true' : 'false');
     btn.addEventListener('click', () => {
       state.greetingId = g.id;
+      state.customGreeting = '';
+      const custom = $('#custom-greeting');
+      const customCount = $('#custom-greeting-count');
+      if (custom) custom.value = '';
+      if (customCount) customCount.textContent = '0/30';
       $$('.greeting-chip').forEach((c) => {
         c.setAttribute('aria-pressed', c.dataset.gid === g.id ? 'true' : 'false');
       });
-      $('#custom-greeting-wrap').classList.toggle('hidden', g.id !== 'custom');
-      if (g.id === 'custom') $('#custom-greeting').focus();
+      syncSurnameUI();
     });
     grid.appendChild(btn);
   });
 }
 
+function renderSurnameChips() {
+  const grid = $('#surname-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  COMMON_SURNAMES.forEach((sn) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'surname-chip';
+    btn.dataset.surname = sn;
+    btn.textContent = sn;
+    btn.setAttribute('aria-pressed', 'false');
+    btn.addEventListener('click', () => {
+      const customInput = $('#custom-surname');
+      if (customInput) customInput.value = '';
+      state.customSurname = '';
+      if (state.surnameChar === sn && state.surnameFormat !== 'none') {
+        state.surnameChar = '';
+        state.surnameFormat = 'none';
+      } else {
+        state.surnameChar = sn;
+        if (state.surnameFormat === 'none') {
+          state.surnameFormat = 'shi';
+        }
+      }
+      syncSurnameUI();
+    });
+    grid.appendChild(btn);
+  });
+}
+
+function syncSurnameUI() {
+  const base = baseSurname();
+  const sample = base || '陳';
+  const hasCustom = Boolean((state.customSurname || '').trim());
+
+  // Update format buttons labels & aria-pressed
+  const fmtMap = {
+    none: tr('surnameFmtNone'),
+    char: tr('surnameFmtChar', { s: sample }),
+    shi: tr('surnameFmtShi', { s: sample }),
+    fu: tr('surnameFmtFu', { s: sample }),
+    jia: tr('surnameFmtJia', { s: sample }),
+  };
+  $$('.surname-fmt-chip').forEach((btn) => {
+    const fmt = btn.dataset.fmt;
+    if (fmtMap[fmt]) btn.textContent = fmtMap[fmt];
+    const active = fmt === 'none' ? !currentSurname() : (Boolean(base) && state.surnameFormat === fmt);
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+
+  // Update surname grid chips aria-pressed
+  $$('.surname-chip').forEach((chip) => {
+    const on = !hasCustom && state.surnameFormat !== 'none' && chip.dataset.surname === state.surnameChar;
+    chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+
+  // Update preview badge
+  const badge = $('#surname-preview-badge');
+  if (badge) {
+    const formatted = currentSurname();
+    if (formatted) {
+      badge.textContent = tr('surnamePreviewBadge', { g: currentGreeting(), s: formatted });
+      badge.classList.add('is-active');
+    } else {
+      badge.textContent = tr('surnameNoneBadge');
+      badge.classList.remove('is-active');
+    }
+  }
+}
+
 function setupGreeting() {
   renderGreetingChips();
+  renderSurnameChips();
+  syncSurnameUI();
+
+  $$('.surname-fmt-chip').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const fmt = btn.dataset.fmt || 'none';
+      if (fmt === 'none') {
+        state.surnameFormat = 'none';
+      } else {
+        state.surnameFormat = fmt;
+        if (!baseSurname()) {
+          state.surnameChar = '陳';
+        }
+      }
+      syncSurnameUI();
+    });
+  });
+
+  const customSurname = $('#custom-surname');
+  if (customSurname) {
+    customSurname.addEventListener('input', () => {
+      state.customSurname = customSurname.value.slice(0, 6);
+      if (customSurname.value.length > 6) customSurname.value = state.customSurname;
+      if (state.customSurname.trim()) {
+        if (state.surnameFormat === 'none') state.surnameFormat = 'char';
+      } else if (!state.surnameChar) {
+        state.surnameFormat = 'none';
+      }
+      syncSurnameUI();
+    });
+  }
 
   const custom = $('#custom-greeting');
   const customCount = $('#custom-greeting-count');
-  custom.addEventListener('input', () => {
-    state.customGreeting = custom.value.slice(0, 30);
-    if (custom.value.length > 30) custom.value = state.customGreeting;
-    customCount.textContent = `${state.customGreeting.length}/30`;
-  });
+  if (custom) {
+    custom.addEventListener('input', () => {
+      state.customGreeting = custom.value.slice(0, 30);
+      if (custom.value.length > 30) custom.value = state.customGreeting;
+      if (customCount) customCount.textContent = `${state.customGreeting.length}/30`;
+      const hasCustom = Boolean(state.customGreeting.trim());
+      if (hasCustom) {
+        state.greetingId = 'custom';
+        $$('.greeting-chip').forEach((c) => c.setAttribute('aria-pressed', 'false'));
+      } else {
+        if (state.greetingId === 'custom') state.greetingId = 'congrats';
+        $$('.greeting-chip').forEach((c) => {
+          c.setAttribute('aria-pressed', c.dataset.gid === state.greetingId ? 'true' : 'false');
+        });
+      }
+      syncSurnameUI();
+    });
+  }
 
   const msg = $('#message-input');
   const msgCount = $('#message-count');
-  msg.addEventListener('input', () => {
-    state.message = msg.value.slice(0, 30);
-    if (msg.value.length > 30) msg.value = state.message;
-    msgCount.textContent = `${state.message.length}/30`;
-  });
+  if (msg) {
+    msg.addEventListener('input', () => {
+      state.message = msg.value.slice(0, 30);
+      if (msg.value.length > 30) msg.value = state.message;
+      if (msgCount) msgCount.textContent = `${state.message.length}/30`;
+    });
+  }
 }
 
 async function goNext() {
@@ -885,12 +1123,27 @@ function bindChrome() {
   $('#btn-back').addEventListener('click', goBack);
   $('#btn-next').addEventListener('click', goNext);
 
+  $('#btn-add-to-cart')?.addEventListener('click', () => {
+    if (!state.result?.canvas) return;
+    window.dispatchEvent(
+      new CustomEvent('laisee:add-to-cart', {
+        detail: {
+          style: state.style,
+          category: state.category,
+          greeting: currentGreeting(),
+          surname: currentSurname(),
+          message: state.message,
+        },
+      })
+    );
+    toast(tr('addedToCart'));
+  });
   $('#btn-download-diecut')?.addEventListener('click', () => { downloadResultDiecut(); });
-  $('#btn-download').addEventListener('click', () => { downloadResultBleed(); });
+  $('#btn-download')?.addEventListener('click', () => { downloadResultBleed(); });
   $('#btn-download-trim')?.addEventListener('click', downloadResultTrim);
   $('#btn-share')?.addEventListener('click', () => { shareResult(); });
-  $('#btn-restart').addEventListener('click', restart);
-  $('#btn-regenerate').addEventListener('click', async () => {
+  $('#btn-restart')?.addEventListener('click', restart);
+  $('#btn-regenerate')?.addEventListener('click', async () => {
     state.tweak = $('#tweak-input').value;
     const ok = await runGenerate();
     if (ok && state.result?.canvas) {
@@ -901,6 +1154,7 @@ function bindChrome() {
 }
 
 function init() {
+  preloadAllStyleThumbs();
   buildStyleGrid();
   setupTerms();
   setupUpload();

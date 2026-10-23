@@ -6,15 +6,15 @@
  * Never hardcode API keys in the browser.
  */
 
-import { STYLES, CATEGORIES, PET_STYLES, KIDS_STYLES, getStylesByCategory, buildPacketPrompt } from './styles.js?v=20261022k';
+import { STYLES, CATEGORIES, PET_STYLES, KIDS_STYLES, getStylesByCategory, getStyleMaxSubjects, buildPacketPrompt } from './styles.js?v=20261023n';
 
-export { STYLES, CATEGORIES, PET_STYLES, KIDS_STYLES, getStylesByCategory, buildPacketPrompt };
+export { STYLES, CATEGORIES, PET_STYLES, KIDS_STYLES, getStylesByCategory, getStyleMaxSubjects, buildPacketPrompt };
 
 const STYLE_IDS = STYLES.map((s) => s.id);
 
 /** Front-panel image paths (cropped from full die-cuts). */
 const STYLE_IMAGES = Object.fromEntries(
-  STYLES.map((s) => [s.id, s.image.includes('?') ? s.image : `${s.image}?v=20261022k`])
+  STYLES.map((s) => [s.id, s.image.includes('?') ? s.image : `${s.image}?v=20261023n`])
 );
 
 const STYLE_THUMBS = Object.fromEntries(
@@ -122,33 +122,65 @@ export async function exportPngWithBleed(sourceCanvas) {
 }
 
 /**
- * Trace the full unfolded laisee die-cut outer contour in 930×1024 base coordinates.
+ * Trace the official e-print unfolded laisee die-cut outer contour.
+ * Exactly matched to official Adobe Illustrator spec RedPacket_Diecut_3.5Wx6.75H.ai:
+ * - Front: 89×172mm (252.28×487.56 pt)
+ * - Back: 86×172mm (243.78×487.56 pt, 168mm flat height, 3.98×2mm corner bevels)
+ * - Top flap: 29mm height (82.21 pt cubic Bézier arch)
+ * - Bottom flap: 15mm height (42.52 pt with rounded corners)
+ * - Right glue flap: 15mm width (42.52 pt with 3mm tapers)
+ * Standardized in 930×1024 base canvas coords (scale factor = 1.5 pt to px).
  */
 function traceDiecutOuterPath(ctx) {
   ctx.beginPath();
-  ctx.moveTo(81, 187);
-  ctx.lineTo(456, 187);
-  ctx.lineTo(478, 175);
-  ctx.ellipse(667.5, 175, 189.5, 94, 0, Math.PI, 0, false);
-  ctx.lineTo(926, 190);
-  ctx.lineTo(926, 890);
-  ctx.lineTo(857, 905);
-  ctx.arcTo(843, 1004, 667.5, 1004, 24);
-  ctx.arcTo(492, 1004, 478, 905, 24);
-  ctx.lineTo(478, 905);
-  ctx.lineTo(456, 893);
-  ctx.lineTo(81, 893);
+  // 1. Back panel top flat edge to bevel:
+  ctx.moveTo(61.06, 184.6);
+  ctx.lineTo(409.8, 184.6);
+  ctx.lineTo(426.73, 176.09);
+
+  // 2. Top flap arch (exact cubic Bézier from .ai):
+  ctx.bezierCurveTo(426.73, 151.84, 486.01, 52.79, 615.95, 52.79);
+  ctx.bezierCurveTo(745.88, 52.79, 805.16, 151.84, 805.16, 176.09);
+
+  // 3. Right glue flap:
+  ctx.lineTo(868.94, 188.85);
+  ctx.lineTo(868.94, 894.68);
+  ctx.lineTo(805.16, 907.43);
+
+  // 4. Bottom flap (exact rounded corners from .ai):
+  ctx.lineTo(794.41, 961.77);
+  ctx.bezierCurveTo(793.39, 971.21, 780.96, 971.21, 780.96, 971.21);
+  ctx.lineTo(450.93, 971.21);
+  ctx.bezierCurveTo(438.49, 971.21, 437.48, 961.77, 437.48, 961.77);
+  ctx.lineTo(426.73, 907.43);
+
+  // 5. Back panel bottom bevel to bottom flat edge:
+  ctx.lineTo(409.8, 898.93);
+  ctx.lineTo(61.06, 898.93);
   ctx.closePath();
+}
+
+/**
+ * Trace the official back-panel insertion slot (插口位: 48×5mm).
+ */
+function traceDiecutSlotPath(ctx) {
+  ctx.beginPath();
+  ctx.moveTo(135.47, 284.52);
+  ctx.bezierCurveTo(137.79, 263.26, 160.05, 263.26, 160.05, 263.26);
+  ctx.lineTo(314.99, 263.26);
+  ctx.bezierCurveTo(337.25, 263.26, 339.57, 284.52, 339.57, 284.52);
 }
 
 /**
  * Build a full unfolded die-cut panorama canvas (全景刀模展開圖) with the generated
  * front artwork embedded in the right-hand front panel and matching back/flaps/cut lines.
+ * Strictly conforms to official RedPacket_Diecut_3.5Wx6.75H.ai specifications.
+ * If `surname` is provided, renders the surname in gold calligraphy rotated 180° on the top flap (封口蓋).
  * @param {HTMLCanvasElement} sourceCanvas - trim-sized front artwork canvas
- * @param {{ styleId?: string, scale?: number }} [opts]
+ * @param {{ styleId?: string, surname?: string, scale?: number }} [opts]
  * @returns {HTMLCanvasElement}
  */
-export function canvasWithDiecut(sourceCanvas, { styleId = 'style01', scale = 2 } = {}) {
+export function canvasWithDiecut(sourceCanvas, { styleId = 'style01', surname = '', scale = 2 } = {}) {
   const baseW = 930;
   const baseH = 1024;
   const out = document.createElement('canvas');
@@ -163,47 +195,146 @@ export function canvasWithDiecut(sourceCanvas, { styleId = 'style01', scale = 2 
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, baseW, baseH);
 
-  // Envelope body fill (slate-blue for style03 Snow Persimmon, classic crimson for all others)
+  // 1. Official Header Spec text & legend (top-left)
+  ctx.save();
+  ctx.fillStyle = '#1a1210';
+  ctx.font = '600 11px "Noto Sans TC", sans-serif';
+  ctx.fillText('3.5"W x 6.75"H', 61, 74);
+
+  // CMYK color chips
+  const cmykColors = ['#009fe3', '#e6007e', '#ffed00', '#1a1210'];
+  const cmykLabels = ['C', 'M', 'Y', 'K'];
+  let chipX = 168;
+  cmykLabels.forEach((lbl, i) => {
+    ctx.fillStyle = cmykColors[i];
+    ctx.fillRect(chipX, 64, 9, 11);
+    ctx.fillStyle = i === 2 ? '#333' : '#fff';
+    ctx.font = '700 8px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(lbl, chipX + 4.5, 69.5);
+    chipX += 11;
+  });
+
+  // Die-cut legend box
+  ctx.fillStyle = '#1682a7';
+  ctx.fillRect(chipX + 8, 64, 11, 11);
+  ctx.fillStyle = '#1682a7';
+  ctx.font = '700 10.5px "Noto Sans TC", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('刀模', chipX + 23, 74);
+  ctx.restore();
+
+  // 2. Envelope body fill
   const envColor = styleId === 'style03' ? '#496f9a' : '#b52a2d';
   traceDiecutOuterPath(ctx);
   ctx.fillStyle = envColor;
   ctx.fill();
 
-  // Draw the generated AI/Canvas front artwork into the front panel (478, 175, 379, 730)
+  // 3. Official Grey Glue Strip on back panel (最少 15mm 脷位疊面: 15mm height, bevel-following 5-point polygon)
   ctx.save();
   ctx.beginPath();
-  ctx.rect(478, 175, 379, 730);
-  ctx.clip();
-  coverDrawImage(ctx, sourceCanvas, 478, 175, 379, 730);
+  ctx.moveTo(61.06, 835.15);
+  ctx.lineTo(61.06, 898.93);
+  ctx.lineTo(409.8, 898.93);
+  ctx.lineTo(426.73, 907.43);
+  ctx.lineTo(426.73, 835.15);
+  ctx.closePath();
+  ctx.fillStyle = '#d9d9d9';
+  ctx.fill();
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#262626';
+  ctx.font = '500 10.5px "Noto Sans TC", sans-serif';
+  ctx.fillText('最少 15mm 脷位疊面，不可落字或標誌', 244, 867);
   ctx.restore();
 
-  // Dashed cyan fold lines around the front panel
+  // 4. Top flap (封口蓋) 180°-rotated gold calligraphy surname
+  const snText = String(surname || '').trim();
+  if (snText) {
+    ctx.save();
+    ctx.translate(615.95, 114);
+    ctx.rotate(Math.PI); // 自動 180° 對位（摺落封背時正立）
+    const fontPx = snText.length === 1 ? 58 : snText.length === 2 ? 45 : snText.length === 3 ? 35 : 29;
+    ctx.font = `400 ${fontPx}px "Ma Shan Zheng", "Zhi Mang Xing", "DFKai-SB", "KaiTi", "STKaiti", "Noto Serif TC", serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(40, 6, 6, 0.45)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetY = 2;
+    const goldGrad = ctx.createLinearGradient(-fontPx, -fontPx * 0.6, fontPx, fontPx * 0.6);
+    goldGrad.addColorStop(0, '#fff2b8');
+    goldGrad.addColorStop(0.35, '#e5b84b');
+    goldGrad.addColorStop(0.7, '#b98223');
+    goldGrad.addColorStop(1, '#f7d983');
+    ctx.fillStyle = goldGrad;
+    ctx.fillText(snText, 0, 0);
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = 'rgba(255, 243, 196, 0.42)';
+    ctx.lineWidth = 0.7;
+    ctx.strokeText(snText, 0, 0);
+    ctx.restore();
+  }
+
+  // 5. Die-cut guide annotations (封口蓋 / 封背主體 / 正面封面 / 右側貼位摺邊)
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#568ea6';
+  ctx.font = '500 12px "Noto Serif TC", "Noto Sans TC", sans-serif';
+  ctx.fillText('封背主體 (86×172mm)', 244, 168);
+
+  ctx.fillStyle = 'rgba(255, 232, 195, 0.58)';
+  ctx.font = '500 10.5px "Noto Serif TC", "Noto Sans TC", sans-serif';
+  ctx.fillText('封口蓋（自動 180° 對位）', 615.95, 162);
+
+  ctx.fillStyle = 'rgba(255, 232, 195, 0.65)';
+  ctx.font = '500 11.5px "Noto Serif TC", "Noto Sans TC", sans-serif';
+  ctx.fillText('正面封面 (89×172mm)', 615.95, 922);
+
+  ctx.save();
+  ctx.translate(837, 542);
+  ctx.rotate(Math.PI / 2);
+  ctx.fillStyle = 'rgba(255, 232, 195, 0.48)';
+  ctx.font = '500 11px "Noto Serif TC", "Noto Sans TC", sans-serif';
+  ctx.fillText('右側貼位摺邊', 0, 0);
+  ctx.restore();
+  ctx.restore();
+
+  // 6. Draw generated front artwork into exact front panel (426.73, 176.09, 378.43, 731.34)
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(426.73, 176.09, 378.43, 731.34);
+  ctx.clip();
+  coverDrawImage(ctx, sourceCanvas, 426.73, 176.09, 378.43, 731.34);
+  ctx.restore();
+
+  // 7. Dashed cyan fold lines around front panel (matching official [11.275 5.638] stroke)
   const dieLineColor = '#1682a7';
   ctx.save();
   ctx.strokeStyle = dieLineColor;
-  ctx.lineWidth = 1.6;
-  ctx.setLineDash([12, 7]);
-  ctx.strokeRect(478, 175, 379, 730);
+  ctx.lineWidth = 1.4;
+  ctx.setLineDash([11, 6]);
+  ctx.strokeRect(426.73, 176.09, 378.43, 731.34);
   ctx.restore();
 
-  // Solid cyan outer cut line around the entire unfolded envelope
+  // 8. Solid cyan outer cut line around entire unfolded envelope
   ctx.save();
   traceDiecutOuterPath(ctx);
   ctx.strokeStyle = dieLineColor;
-  ctx.lineWidth = 1.6;
+  ctx.lineWidth = 1.4;
   ctx.lineJoin = 'round';
   ctx.stroke();
   ctx.restore();
 
-  // Back flap insertion slot cut line on left back panel
+  // 9. Back flap insertion slot cut line on left back panel (exact .ai Bézier curve)
   ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(163, 306);
-  ctx.arc(192, 306, 29, Math.PI, 1.5 * Math.PI, false);
-  ctx.lineTo(349, 277);
-  ctx.arc(349, 306, 29, 1.5 * Math.PI, 0, false);
+  traceDiecutSlotPath(ctx);
   ctx.strokeStyle = dieLineColor;
-  ctx.lineWidth = 1.6;
+  ctx.lineWidth = 1.4;
   ctx.lineCap = 'round';
   ctx.stroke();
   ctx.restore();
@@ -547,9 +678,11 @@ async function tryProxyGenerate({ prompt, photos, style, endpoint }) {
   let styleImage = null;
   if (!styleMeta?.skipTemplateImage) {
     try {
-      const styleSrc = STYLE_IMAGES[style] || STYLE_IMAGES.style01;
-      if (styleSrc) {
-        const styleImg = await loadImage(styleSrc);
+      const rawRef = styleMeta?.refImage
+        ? `${styleMeta.refImage}?v=20261023l`
+        : STYLE_IMAGES[style] || STYLE_IMAGES.style01;
+      if (rawRef) {
+        const styleImg = await loadImage(rawRef);
         // Keep template compact and readable to the model.
         styleImage = imageToJpegDataUrl(styleImg, 1024);
       }
@@ -624,6 +757,7 @@ export async function generatePacket({
   aspect = 'packet',
   photos = [],
   greeting = '恭喜發財',
+  surname = '',
   message = '',
   tweak = '',
   api = null,
@@ -635,6 +769,7 @@ export async function generatePacket({
     styleId: style,
     category,
     greeting,
+    surname,
     message,
     tweak,
   });
@@ -655,7 +790,7 @@ export async function generatePacket({
         endpoint: api?.endpoint,
       });
       const painted = await dataUrlToCanvas(remote.dataUrl, dims);
-      const diecutCanvas = canvasWithDiecut(painted.canvas, { styleId: style });
+      const diecutCanvas = canvasWithDiecut(painted.canvas, { styleId: style, surname });
       console.info(
         `[laisee] AI OK via proxy (${remote.provider || '?'} / ${remote.model || '?'})`
       );
@@ -796,7 +931,7 @@ export async function generatePacket({
 
   const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
   const dataUrl = canvas.toDataURL('image/png');
-  const diecutCanvas = canvasWithDiecut(canvas, { styleId: style });
+  const diecutCanvas = canvasWithDiecut(canvas, { styleId: style, surname });
   console.info('[laisee] mode=canvas (local composite: style base + photo window; not AI template-replace)');
   return { canvas, diecutCanvas, styleId: style, blob, dataUrl, prompt: promptText, mode: 'canvas', notice: limitNotice };
 }

@@ -597,8 +597,10 @@ function serveStatic(req, res) {
       return res.end('Not found');
     }
     const ext = path.extname(file).toLowerCase();
+    const isAsset = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.ico'].includes(ext);
     res.writeHead(200, {
       'Content-Type': MIME[ext] || 'application/octet-stream',
+      'Cache-Control': isAsset ? 'public, max-age=86400' : 'no-cache',
     });
     res.end(data);
   });

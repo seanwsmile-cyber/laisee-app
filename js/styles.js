@@ -5,10 +5,10 @@
  *
  * Dual-mode architecture:
  * - 'pet' (🐾 小動物／毛孩): style01–style08 (8 styles) — breed, coat color, markings & festive pet accessories
- * - 'kids' (👶 小朋友／親子): style09–style13 (5 styles) — print-friendly clean flat/2D chibi, child facial likeness & simple festive attire
+ * - 'kids' (👶 小朋友／親子): style09–style13 (5 styles) — one distinct illustration style each (watercolor storybook, 3D animated film, anime, gongbi, paper-cut), natural child proportions, stylized (non-photoreal) child likeness & festive attire
  */
 
-const CACHE = '20261022k';
+const CACHE = '20261023n';
 
 export const CATEGORIES = {
   pet: {
@@ -31,6 +31,7 @@ export const STYLES = [
     nameEn: 'Golden Lion',
     captionZh: '醒獅裝扮 × 燈火光軌',
     captionEn: 'Lion-dance costume × light trails',
+    maxSubjects: 1,
     image: 'assets/styles/front-01.jpg',
     thumb: `assets/styles/front-01-thumb.jpg?v=${CACHE}`,
     profileKey: 'horse',
@@ -50,6 +51,7 @@ export const STYLES = [
     nameEn: 'Peony Fortune',
     captionZh: '牡丹盛放 × 金箔富貴',
     captionEn: 'Blooming peonies × gold-foil fortune',
+    maxSubjects: 1,
     image: 'assets/styles/front-02.jpg',
     thumb: `assets/styles/front-02-thumb.jpg?v=${CACHE}`,
     profileKey: 'peony',
@@ -69,6 +71,7 @@ export const STYLES = [
     nameEn: 'Snow Persimmon',
     captionZh: '瑞雪紅柿 × 飛簷大吉',
     captionEn: 'Snowy eaves × ripe persimmons',
+    maxSubjects: 1,
     image: 'assets/styles/front-03.jpg',
     thumb: `assets/styles/front-03-thumb.jpg?v=${CACHE}`,
     profileKey: 'persimmon',
@@ -88,17 +91,18 @@ export const STYLES = [
     nameEn: 'Lion Parade',
     captionZh: '醒獅巡遊 × 石板街景',
     captionEn: 'Lion parade × cobblestone street',
+    maxSubjects: 1,
     image: 'assets/styles/pack-04.jpg',
     thumb: `assets/styles/pack-04-thumb.jpg?v=${CACHE}`,
     profileKey: 'sample_047',
     scene:
       'Preserve the warm miniature festival street, stone paving, receding traditional facades and hanging red lanterns. Use amber daylight, gentle lantern bokeh, softly modeled architectural detail and warm reflected light, with small golden festive accents in the air. Maintain the original narrow-street depth and tactile storybook atmosphere while keeping the central setting coherent and richly colored.',
     subject:
-      'Dress uploaded pet/animal identities in complete red-and-gold brocade jackets and festive collars/trousers with elaborate white lion-dance headdresses above visible pet faces; use soft three-dimensional modeling at natural positions and scale, preserving actual animal species, coat markings, ear shapes, muzzles and count.',
+      'Dress uploaded pet/animal identities in complete red-and-gold brocade jackets and festive collars/trousers with elaborate white lion-dance headdresses above visible pet faces; use soft three-dimensional modeling at natural positions and scale, preserving actual animal species, coat markings, ear shapes, muzzles and count. CRITICAL PAW & LIMB REPLACEMENT: the template reference shows a panda with black paws — you MUST replace ALL visible hands, paws, wrists and feet with paws matching the uploaded pet’s own natural fur color (e.g. white/cream fluffy cat paws for a white cat, golden fur paws for a shiba, etc.).',
     lettering:
       'Prioritize legible original lettering; otherwise use warm pale-gold festive brushwork with controlled variation and clear complete strokes.',
     avoid:
-      'Avoid panda markings on other species, hidden faces, incomplete costumes, photographic cutouts, white backdrop halos and headdresses fused into heads.',
+      'No black panda paws/hands/feet on non-panda pets, no panda markings on other species, hidden faces, incomplete costumes, photographic cutouts, white backdrop halos and headdresses fused into heads.',
   },
   {
     id: 'style05',
@@ -107,17 +111,21 @@ export const STYLES = [
     nameEn: 'Red Lanterns',
     captionZh: '剪紙燈籠 × 亭臺雲影',
     captionEn: 'Papercut lanterns × pavilion clouds',
+    maxSubjects: 1,
     image: 'assets/styles/pack-05.jpg',
+    refImage: 'assets/styles/pack-05-ref.jpg',
     thumb: `assets/styles/pack-05-thumb.jpg?v=${CACHE}`,
     profileKey: 'sample_018',
+    artStyle:
+      'UNIFIED WARM GOUACHE & SOFT STORYBOOK ILLUSTRATION FOR THE ENTIRE PET: while the surrounding lanterns, clouds and pavilion are layered paper-cut scenery, the ENTIRE PET (head, face, eyes, muzzle, ears, chest, torso, legs, paws and tail) MUST be painted in ONE single, seamless warm gouache storybook illustration style with smooth brush-painted fur volumes and clean warm outlines — NEVER a realistic/airbrushed head on a paper-cut body, and NEVER spiky paper-cut strips or feather-like scales on the body.',
     scene:
-      'Layered red and cream-gold paper-cut festival scenery: lanterns and ornamental corners above, a small pagoda at the right, cream-gold terraced curves across the base and an ornamental greeting plaque. Preserve each paper layer and its gentle cast shadow.',
+      'Layered red and cream-gold paper-cut festival scenery: lanterns and ornamental corners above, a small pagoda at the right, cream-gold terraced curves across the base and an ornamental greeting plaque. Preserve each background paper layer and its gentle cast shadow.',
     subject:
-      'The example is a corgi dog with clear ears, muzzle, white chest and red festive bandana. Replace that example with the uploaded pet/animal while preserving the actual species, breed, coat color, facial markings and count. Keep the festive red bandana/collar accessory adapted to the pet. Use warm outlined gouache forms and restrained paper-cut shading. User scale and placement override sample pose; preserve all uploaded pets without duplication or merged faces.',
+      'The grey blurred silhouette in the center of Image 1 is only a placement placeholder. Replace it completely with the uploaded pet/animal as ONE cohesive, unified warm gouache storybook illustration from ears to paws: stylized illustrated eyes, soft painted muzzle, and smooth rounded brush-painted fur tufts across BOTH the head and the entire body (chest, belly, legs, paws and tail). Preserve the uploaded pet’s true species, breed, coat color, facial/body markings and anatomy (e.g. a compact fluffy cat body and cat paws for a cat — never a Corgi dog’s wide torso or dog paws). Keep the festive teal-and-red floral bandana around the neck. Head and body must have the exact same brushwork, texture and stylization level.',
     lettering:
       'Use the clear Traditional Chinese brush lettering visible in this revised original: complete radicals, solid readable strokes, open counters and natural tapered terminals. Copy its ink color and brush character, while following the exact user greeting with compact spacing. Never copy sample wording, add decorative pseudo-characters or substitute Simplified forms.',
     avoid:
-      'No white photo rectangle, cutout halo, leftover original subjects, generic replacement mascot, missing pet, changed background geometry, added unrelated props or illegible pseudo-Chinese. Keep the original medium consistent across the entire subject and scenery.',
+      'CRITICAL: NO head-vs-body style mismatch (never put a realistic or semi-realistic pet head onto a paper-cut or spiky body), NO jagged/spiky paper-cut fur strips or pine-cone scales on the pet’s chest or body, NO leftover Corgi dog body/shoulders/paws, no white photo rectangle, cutout halo, generic replacement mascot or illegible pseudo-Chinese.',
   },
   {
     id: 'style06',
@@ -126,6 +134,7 @@ export const STYLES = [
     nameEn: 'Golden Courtyard',
     captionZh: '金庭暖陽 × 如意柑橘',
     captionEn: 'Golden courtyard × auspicious citrus',
+    maxSubjects: 1,
     image: 'assets/styles/pack-06.jpg',
     thumb: `assets/styles/pack-06-thumb.jpg?v=${CACHE}`,
     profileKey: 'sample_020',
@@ -145,17 +154,19 @@ export const STYLES = [
     nameEn: 'Lantern Wish',
     captionZh: '夜院許願 × 燈火光暈',
     captionEn: 'Night courtyard wish × lantern glow',
+    maxSubjects: 1,
     image: 'assets/styles/pack-07.jpg',
+    refImage: 'assets/styles/pack-07-ref.jpg',
     thumb: `assets/styles/pack-07-thumb.jpg?v=${CACHE}`,
     profileKey: 'sample_019',
     scene:
       'Preserve a dark navy-and-burgundy festival courtyard with a warm stone floor, distant red architecture, small overhead fireworks and a large glowing red silk lantern above and to the right. Resolve lantern ribs and gold fittings clearly, using amber light pools, soft background bokeh and restrained floating warm specks. Keep a storybook 3D finish and depth without losing the red nighttime atmosphere.',
     subject:
-      'Model every uploaded pet/animal as a charming large-headed storybook collectible while retaining its exact species, breed, coat color, facial markings and separate identity. Adapt the lantern-string paw/wing gesture, festive red collar and gold bell accessory with matching shadows; exact user scale and placement override the original.',
+      'The grey silhouette in the lower-left foreground of Image 1 is only a placeholder showing the pose: a chubby upright 3D vinyl/clay collectible figure (Pop Mart / Pixar toy look) standing on two hind legs, one front paw raised holding the glowing lantern stick. Rebuild that figure as ONE complete, unified character from the uploaded pet: head, torso, chest, arms/front legs, paws, hind legs and tail ALL share the uploaded pet’s true fur colour, pattern and markings (e.g. a fluffy white-and-cream Persian becomes white-and-cream from ears to tail tip). Use the same smooth sculpted 3D toy finish with softly stylized fur, big round glossy eyes, oversized head and short limbs for the WHOLE body — NOT a realistic photographed animal, and the head must never look more photographic than the body. Keep the uploaded pet’s species, breed, face shape, ear shape, eye colour and markings. Add the festive red collar with gold bell, with warm lantern light and floor shadows; exact user scale and placement override the original.',
     lettering:
       'Use legible original typography first; fallback is rounded orange-gold brush calligraphy with solid strokes.',
     avoid:
-      'No kitten conversion for non-cats, extra figures, white backdrop, photographic fur, elongated bodies or glare.',
+      'No orange tabby stripes or orange fur anywhere unless the uploaded pet is actually orange, no leftover template cat body/limbs/tail, no realistic photo head pasted onto a toy body (head and body must be one consistent style and coat), no kitten conversion for non-cats, extra figures, white backdrop, elongated bodies or glare.',
   },
   {
     id: 'style08',
@@ -164,112 +175,133 @@ export const STYLES = [
     nameEn: 'Firework Fireflies',
     captionZh: '竹林螢火 × 煙花夜空',
     captionEn: 'Bamboo fireflies × firework night sky',
+    maxSubjects: 2,
     image: 'assets/styles/pack-08.jpg',
     thumb: `assets/styles/pack-08-thumb.jpg?v=${CACHE}`,
     profileKey: 'sample_024',
     scene:
-      'Deep navy night with blue/gold fireworks, bamboo framing both sides, lush small flowers below and the existing campfire with its flames and logs at center. Preserve the campfire location and size precisely.',
+      'Deep navy night sky with celebratory fireworks framing the left and right sides, while keeping a clean, uncluttered dark-navy sky reserve in the upper-center greeting zone so the calligraphy reads with maximum contrast. Bamboo frames both sides, lush small flowers sit below, and the cozy campfire with warm flames and logs sits at center.',
     subject:
       'The seated figures beside the campfire are replacement examples. Use actual uploaded pet/animal identities in those slots and maintain clear species anatomy, breed features, coat markings, soft storybook painted contours and warm firelight on the inward sides. With one pet, replace the left example only and omit the other original figure; with two or more pets, use both sides of the campfire without covering the fire or bridging the gap. Preserve every uploaded animal species without duplication or merged faces.',
     lettering:
-      'Use the clear Traditional Chinese brush lettering visible in this revised original: complete radicals, solid readable strokes, open counters and natural tapered terminals. Copy its ink color and brush character, while following the exact user greeting with compact spacing. Never copy sample wording, add decorative pseudo-characters or substitute Simplified forms.',
+      'Render the greeting in bright, luminous warm cream-gold (#FFE89E) Traditional Chinese brush calligraphy centered in the clean upper-center dark-navy sky zone. Keep strokes bold, solid and high-contrast against the dark night sky — never use dark red lettering that collides with or disappears into firework streaks.',
     avoid:
-      'No white photo rectangle, cutout halo, leftover original panda/child subjects, generic replacement mascot, missing pet, changed background geometry, added unrelated props or illegible pseudo-Chinese. Keep the original medium consistent across the entire subject and scenery.',
+      'No red text overlapping busy firework lines, no white photo rectangle, cutout halo, leftover original panda/child subjects, generic replacement mascot, missing pet, changed background geometry, added unrelated props or illegible pseudo-Chinese.',
   },
   {
     id: 'style09',
     category: 'kids',
     nameZh: '朱紅祥雲',
     nameEn: 'Crimson Lantern',
-    captionZh: '經典紅底 × 燈籠萌娃（單人）',
-    captionEn: 'Classic red & clouds × lantern kid (solo)',
+    captionZh: '手繪水彩繪本 × 祥雲宮燈（單人）',
+    captionEn: 'Hand-painted watercolor storybook × palace lantern (solo)',
+    maxSubjects: 1,
     image: 'assets/styles/pack-09.jpg',
+    refImage: 'assets/styles/pack-09-ref.jpg',
     thumb: `assets/styles/pack-09-thumb.jpg?v=${CACHE}`,
-    profileKey: 'chibi_kids',
+    profileKey: 'kids_watercolor',
+    artStyle:
+      'WARM HAND-PAINTED WATERCOLOR & GOUACHE STORYBOOK ILLUSTRATION (Studio Ghibli-inspired picture-book look): soft visible brush strokes, gentle paper grain, simple warm painted shading, soft pencil-like outlines. Faces are drawn simply and charmingly in this painted style — small expressive eyes, a tiny nose suggested with one soft stroke, rosy painted cheeks.',
     scene:
-      'Preserve a clean, print-friendly flat 2D Lunar New Year red-packet background: solid rich crimson-red field (#b52a2d), simple bold-lined flat golden auspicious cloud motifs, and a clean gold hairline border frame. Keep large, uncluttered color blocks with zero tiny bokeh sparks or complex gradients so it prints crisply in CMYK.',
+      'Preserve the warm hand-painted crimson-and-gold Lunar New Year palace courtyard: vermilion columns painted with loose brushwork, glowing red palace lanterns with gold tassels, swirling golden auspicious clouds, warm amber evening light washes.',
     subject:
-      'Reimagine the uploaded child as a cute 2.5-head flat/cel-shaded chibi human character with bold clean outlines and simple flat color shading while keeping recognizable facial features (eye shape, brows, cheeks, smile, hairstyle, fringe and glasses if worn), apparent age and expression. Dress them in a clean, simple red-and-gold tang suit (bold flat gold trim, no tiny micro-embroidery) holding a simple round red lantern with human hands.',
+      'Paint the uploaded child standing in the center with natural young-child proportions (about 4 heads tall, normal-sized head, real shoulders, arms and legs), wearing a crimson Tang suit with gold cloud embroidery and holding a glowing red palace lantern on a short stick. Keep the child’s real hairstyle, fringe direction, face shape, eye shape and calm closed-mouth expression — but drawn as a painted storybook character, never a photo face.',
     lettering:
-      'Clean solid-gold Chinese brush calligraphy with crisp edges, solid flat gold fill and open counters in the upper reserved plaque area — no blurry glow or complex metallic noise.',
+      'Warm gold hand-brushed Traditional Chinese calligraphy with crisp edges and open counters in the upper reserved sky area. STRICT TRADITIONAL ORTHOGRAPHY: 財 (never 财), 發 (never 发).',
     avoid:
-      'No complex 3D bokeh, tiny intricate embroidery, muddy gradients, busy background clutter, photoreal paste-ins, white studio backdrop, photo rectangle, animal ears/paws on children or leftover template characters.',
+      'No photorealistic or semi-realistic face, no 3D render look, no oversized head on a tiny body, no doll eyelashes on boys, no Simplified Chinese, no fake wide-open laugh when the photo has closed lips, no white backdrop, no photo rectangle, and never copy the template child’s face.',
   },
   {
     id: 'style10',
     category: 'kids',
     nameZh: '金橘萌寶',
     nameEn: 'Golden Tangerine',
-    captionZh: '暖金黃底 × 大桔二頭身（單人）',
-    captionEn: 'Imperial gold backdrop × lucky tangerine baby',
+    captionZh: '3D 動畫電影風 × 大桔萌寶（單人）',
+    captionEn: '3D animated-film look × lucky tangerine kid (solo)',
+    maxSubjects: 1,
     image: 'assets/styles/pack-10.jpg',
+    refImage: 'assets/styles/pack-10-ref.jpg',
     thumb: `assets/styles/pack-10-thumb.jpg?v=${CACHE}`,
-    profileKey: 'chibi_baby',
+    profileKey: 'kids_3d_animation',
+    artStyle:
+      '3D ANIMATED FEATURE-FILM CHARACTER STYLE (Pixar / Disney look, like "Turning Red" or "Luca"): smooth stylized cartoon shading, simplified appealing shapes, large expressive animated eyes, soft clean skin without pores or photographic texture, warm cinematic lighting. Clearly a cartoon character, never a realistic human render.',
     scene:
-      'Preserve the warm, vibrant Imperial Golden-Yellow solid background (#F2B63D) with a clean thin crimson inner border line and a few simple flat red-and-gold lucky coins. Keep the warm yellow-gold field full-bleed to all 4 edges with zero tiny sparkles, heavy gradients or cluttered props.',
+      'Preserve the luminous golden-amber festival courtyard with flowing red silk ribbons, golden bokeh, warm sunlight rays and shiny antique gold coins scattered on a polished wooden floor.',
     subject:
-      'Reimagine the uploaded baby, toddler or child identity as a true 2-head baby/toddler chibi human character in a clean 2D flat/storybook vector style with bold outlines and soft chubby cheeks, preserving the child’s recognizable face shape, eyes, hairstyle, skin tone and expression. Dress them in a simple red-and-gold festive sleeveless vest holding one large, clean-shaped orange lucky tangerine (大桔) with distinct human hands.',
+      'Render the uploaded child as an animated-film character with natural animated-child proportions (about 3.5–4 heads tall, body and limbs in proportion — not a bobble-head), wearing a white-fur-trimmed red-and-gold festive vest, cheerfully holding a big glossy mandarin tangerine with green leaves in both hands. Translate the real child’s hairstyle and fringe, face shape, eye shape and calm closed-mouth expression into the cartoon design. PROPORTION: keep the head no wider than the shoulders, about one quarter of the visible body height, with a visible neck — never a bobble-head toy.',
     lettering:
-      'Clean bold crimson-red Chinese brush calligraphy with crisp print-ready edges in the upper reserved greeting area standing out strongly against the golden-yellow background.',
+      'Bold crimson-red Traditional Chinese brush calligraphy with a subtle gold rim in the upper reserved area, strongly contrasting with the golden sky.',
     avoid:
-      'No switching the golden-yellow background back to plain red, no overly complex props, tall realistic bodies, white backdrop, photographic paste-in, animal anatomy on children or leftover template subjects.',
+      'No photorealistic skin, pores or real-person face, no uncanny realistic 3D portrait, no tiny body with giant head, no flat 2D clip-art, no fake open-mouth laugh when the photo has closed lips, no white backdrop, no animal anatomy on children, and never copy the template character.',
   },
   {
     id: 'style11',
     category: 'kids',
     nameZh: '醒獅孖寶',
     nameEn: 'Lion Cap Duo',
-    captionZh: '瑞藍撞色 × 醒獅雙人版（雙人）',
-    captionEn: 'Indigo & crimson waves × lion cap duo (2-person)',
+    captionZh: '日系動漫插畫 × 醒獅帽雙人版（雙人）',
+    captionEn: 'Japanese anime illustration × lion-cap duo (2-person)',
+    maxSubjects: 2,
     image: 'assets/styles/pack-11.jpg',
+    refImage: 'assets/styles/pack-11-ref.jpg',
     thumb: `assets/styles/pack-11-thumb.jpg?v=${CACHE}`,
-    profileKey: 'chibi_lion_duo',
+    profileKey: 'kids_anime',
+    artStyle:
+      'WARM JAPANESE ANIME ILLUSTRATION (Makoto Shinkai / Kyoto Animation inspired): crisp clean anime linework, cel shading with soft glow, luminous night lighting, expressive anime eyes with highlights, simplified anime nose and mouth.',
     scene:
-      'Preserve the deep Festive Royal Indigo-Blue solid background (#1B365D) with bold flat vermilion-red and warm cream-gold auspicious wave/cloud patterns across the bottom and a clean gold border line. Maintain large, flat print-friendly GuoChao color blocks reaching all 4 edges.',
+      'Preserve the deep royal-indigo festival night sky with glowing red lanterns, golden spark trails, softly lit traditional eaves and crimson-and-gold auspicious cloud-and-wave ornaments along the lower border.',
     subject:
-      'TWO-PERSON DUO COMPOSITION (雙人醒獅版): Reimagine the uploaded two children/siblings/family members side-by-side (or if only 1 person is uploaded, pair them with a joyful festive sibling/companion alongside them) as cute 2.5-head flat/2D chibi human characters wearing simplified, bold-lined cute white-and-red lion-dance caps resting on top of their heads (keeping each person’s entire face, eyebrows, eyes, smile and hair bangs clearly visible) and clean red festive Tang jackets, smiling and waving together.',
+      'TWO-PERSON DUO: draw two anime children side by side with natural anime-child proportions (about 4–4.5 heads tall, half-body to knees). If only one person is uploaded, that child is the main figure on the left and a festive anime companion stands beside them. Both wear red-and-gold embroidered Tang jackets and plush lion-dance hats resting on top of their heads (bangs, eyebrows and full faces visible). The uploaded child keeps their hairstyle, fringe direction, face shape and calm closed-mouth expression, drawn in anime style.',
     lettering:
-      'Crisp warm cream-gold Chinese brush calligraphy centered in the upper indigo sky area, high contrast and print-friendly.',
+      'Luminous warm cream-gold Traditional Chinese brush calligraphy centered in the upper indigo sky, high contrast and crisp.',
     avoid:
-      'No switching the royal indigo background to red, no covering faces with lion masks, no merging the two characters into one face, no white backdrop, no photorealistic cutouts or animal paws on humans.',
+      'No photorealistic or semi-realistic faces, no 3D render, no chibi giant heads, no lion masks covering faces, no merged characters, no switching the indigo night to plain red, no white backdrop, and never copy the template faces.',
   },
   {
     id: 'style12',
     category: 'kids',
     nameZh: '粉桃財神',
     nameEn: 'Peach Blossom Ingot',
-    captionZh: '蜜桃粉底 × 金元寶萌娃（單人）',
-    captionEn: 'Peach-pink medallion × gold ingot kid (solo)',
+    captionZh: '新中式工筆國潮 × 金元寶小財神（單人）',
+    captionEn: 'Modern Chinese gongbi illustration × golden ingot kid (solo)',
+    maxSubjects: 1,
     image: 'assets/styles/pack-12.jpg',
+    refImage: 'assets/styles/pack-12-ref.jpg',
     thumb: `assets/styles/pack-12-thumb.jpg?v=${CACHE}`,
-    profileKey: 'chibi_fortune_kid',
+    profileKey: 'kids_gongbi',
+    artStyle:
+      'MODERN CHINESE GONGBI / GUOCHAO FESTIVE ILLUSTRATION: fine even ink outlines, flat mineral-pigment colour washes with delicate gradients, gold-leaf accents, elegant decorative patterns. Faces are drawn in the gongbi manner — clean ink contour, simple elegant eyes, small nose line, soft blush — never photographic.',
     scene:
-      'Preserve the warm Blossom Peach-Pink / Coral-Rose solid background (#E86272) featuring a large clean cream-and-gold circular medallion frame in the middle and simple 5-petal flat pink plum blossoms at the four corners. Keep all color blocks flat, crisp and print-ready.',
+      'Preserve the coral-pink peach-blossom courtyard with layered finely outlined blossoms, soft spring light and the ornate cream-and-gold circular moon-gate frame in the center.',
     subject:
-      'Reimagine the uploaded child as a cute 2.5-head flat/2D chibi human character inside the cream-gold medallion with bold clean outlines, wearing a festive New Year outfit and a small round red-and-gold cap (leaving hair bangs, braids/hairstyle and full face visible), holding a single large, clean-shaped golden sycee ingot (金元寶) in front of the chest with human hands.',
+      'Inside the moon gate, draw the uploaded child with natural young-child proportions (about 4 heads tall, half-body or full body), wearing a rose-crimson and gold patterned New Year outfit with a small festive cap sitting on top of the hair (fringe and full face visible), holding a golden sycee ingot (金元寶) in front of the chest with both hands. Keep the child’s real hairstyle, fringe direction, face shape, eye shape and calm closed-mouth expression, drawn in gongbi style. GONGBI FACE LOCK: follow the softly blurred painted face in Image 1 — flat pale skin with only a light blush wash, thin even ink contour around face and features, eyes drawn with ink lines, a single small line for the nose; no realistic skin shading, no photographic eyes or lips.',
     lettering:
-      'Clean cream-gold Chinese brush calligraphy with crisp strokes in the upper reserved peach-pink greeting area above the medallion.',
+      'Clean warm cream-gold Traditional Chinese brush calligraphy in the upper coral-pink area above the moon gate. Strictly Traditional forms (學, 業, 進).',
     avoid:
-      'No adult beard or adult god-of-wealth mask, no cluttered background props, no micro-patterns, no white outer backdrop, no photographic paste-in or animal features.',
+      'No photorealistic face, no 3D render, no oversized head on a tiny body, no leftover girl pigtails when the photo is a boy, no adult beard or mask, no fake open-mouth laugh when the photo has closed lips, no white outer backdrop, and never copy the template child’s face.',
   },
   {
     id: 'style13',
     category: 'kids',
     nameZh: '親子拜年',
     nameEn: 'Jade Arch Duo',
-    captionZh: '翡翠金窗 × 雙人拱手拜年（雙人）',
-    captionEn: 'Jade & gold archway × New Year greeting duo (2-person)',
+    captionZh: '溫馨手繪繪本 × 翡翠庭園雙人拜年（雙人）',
+    captionEn: 'Warm storybook illustration × jade pavilion greeting duo (2-person)',
+    maxSubjects: 2,
     image: 'assets/styles/pack-13.jpg',
+    refImage: 'assets/styles/pack-13-ref.jpg',
     thumb: `assets/styles/pack-13-thumb.jpg?v=${CACHE}`,
-    profileKey: 'chibi_blossom_duo',
+    profileKey: 'kids_jade_storybook',
+    artStyle:
+      'WARM HAND-PAINTED STORYBOOK & SOFT-GLOW ILLUSTRATION (Studio Ghibli / warm picture-book linework and watercolor-gouache shading): clean delicate hand-drawn outlines, soft warm brush-painted shading, luminous lantern rim light, natural expressive illustrated faces (never photorealistic, never flat paper-cutouts with sticker borders).',
     scene:
-      'Preserve the Festive Jade-Emerald Green solid background (#1B5E4B) with a warm cream-and-gold traditional Chinese rounded archway window in the center, accented with simple flat coral-red hanging lanterns and pink peach blossoms at the upper corners. Keep all shapes simple, bold and uncluttered for clean commercial printing.',
+      'Preserve the rich jade-emerald and gold carved Chinese garden pavilion archway frame, with a WARM, LUMINOUS LANTERN-LIT COURTYARD INTERIOR visible inside the arch behind the characters (softly glowing warm amber palace corridors, floating golden bokeh and distant red lanterns — NEVER a dark brown or black empty void). Keep the hanging coral-red silk lanterns and blooming pink plum-blossom branches at the upper corners.',
     subject:
-      'TWO-PERSON FAMILY / SIBLING DUO COMPOSITION (雙人親子／孖寶拜年版): Inside the golden archway, reimagine the two uploaded people (parent & child, or older & younger sibling; if 1 person is uploaded, pair them with a loving parent/sibling companion) side-by-side as cute 2.5-head flat/2D chibi human characters wearing matching red-and-gold festive Tang outfits, making the cheerful two-hand Lunar New Year greeting gesture (拱手拜年) together while preserving each person’s recognizable facial features, hairstyle, glasses if worn, and relative height.',
+      'TWO-PERSON DUO: inside the warm-lit golden arch, paint two children side by side from head to knees (natural 4-head child proportions, natural shoulders and torso, NO die-cut sticker outlines around them) wearing crimson-and-gold embroidered Tang suits with soft white fur trim, making the two-hand New Year greeting gesture (拱手拜年). If only 1 person is uploaded, make the LEFT child the uploaded child (preserving their exact straight hair/fringe parting direction, face shape, almond eye shape and calm closed-mouth expression) and keep the RIGHT figure as a cute festive younger sister/companion with hair buns so they look like a natural brother-and-sister pair (NEVER two identical clones of the same child). If 2 people are uploaded, draw both uploaded people side by side. Render all faces in the exact same warm hand-painted watercolor & gouache storybook illustration style as Image 1 — NO photorealistic skin or pasted photo faces.',
     lettering:
-      'Clean warm-gold Chinese brush calligraphy centered in the upper jade-green reserved greeting area above the archway.',
+      'Clean metallic warm-gold Traditional Chinese brush calligraphy centered in the upper jade-green area above the arch. Strictly Traditional forms (體, 樂).',
     avoid:
-      'No switching the jade-green background to plain red, no dense realistic floral branches crossing faces, no complex 3D bokeh, no white backdrop, no photorealistic cutouts or animal anatomy.',
+      'No dark brown/black empty void inside the arch, no die-cut paper sticker borders around characters, no stiff identical clone poses, no photorealistic faces, no giant heads on tiny bodies, no blank scroll banner over the arch, no white backdrop, and never copy the template characters’ faces.',
   },
 ];
 
@@ -279,6 +311,11 @@ export const KIDS_STYLES = STYLES.filter((s) => s.category === 'kids');
 export function getStylesByCategory(category = 'pet') {
   const cat = category === 'kids' ? 'kids' : 'pet';
   return STYLES.filter((s) => s.category === cat);
+}
+
+export function getStyleMaxSubjects(styleId) {
+  const s = STYLE_BY_ID[styleId];
+  return s?.maxSubjects || 1;
 }
 
 const STYLE_BY_ID = Object.fromEntries(STYLES.map((s) => [s.id, s]));
@@ -296,32 +333,33 @@ const PET_STYLE_LOCKED =
   'STYLE-LOCKED CHARACTER REPLACEMENT: Image 1 is the master for rendering technique, composition, pose, head-to-body proportions, accessories and lighting. Keep that artwork\'s visual language throughout. Image 2+ supplies pet identity cues ONLY, including SPECIES, breed, coat colors, markings and breed-specific anatomy. Never copy any source-photo background or photographic rendering into a stylized design. Identity takes priority over the original animal anatomy: a dog remains a dog, never a kitten; a cat remains a cat; a bird or rabbit keeps its true species. If the master is a 3D collectible, plush illustration, painting or paper-cut print, render the replacement pet in exactly that same medium.';
 
 const KIDS_SUBJECT_IDENTITY =
-  'SUBJECT IDENTITY AND COUNT (KIDS & FAMILY CHIBI MODE) — highest priority above template characters: Uploaded photo references supply the ONLY child/human identity. Preserve every clearly intended foreground child, baby, toddler or family member. Keep the exact intended person count: no missing child, duplicate, merged face or blended identity. Preserve each child’s recognizable facial features — face shape, chubby cheeks, eye shape and spacing, eyebrows, nose, natural smile/expression, skin tone, hairstyle, fringe, hair accessories and glasses if worn — along with apparent age and relative height order. Do not turn children into animals or generic stock dolls. Do not infer species from the style name or original template animal. Stylize each child in the selected cute chibi medium while keeping their individual likeness unmistakable.';
+  'SUBJECT IDENTITY AND COUNT (KIDS & FAMILY ILLUSTRATED MODE) — highest priority above template characters: Image 2 (and any further identity images) supply the ONLY child/human identity. Completely discard the template character’s face and hair in Image 1. Preserve every clearly intended foreground child, baby, toddler or family member and keep them recognizable THROUGH STYLIZATION: hairstyle, hair colour and exact fringe/parting direction, face shape and cheek fullness, eye shape (single/double eyelid feel), eyebrow shape, skin tone, and authentic expression (CRITICAL: if the child has closed lips, a gentle pout or a calm gaze in the photo, keep that closed-mouth expression — NEVER substitute a wide-open laughing mouth). Likeness comes from these features, NOT from photographic realism.';
 
 const KIDS_ANATOMY_ADAPTATION =
-  'KIDS CHIBI PROPORTION AND FESTIVE CLOTHING ADAPTATION: reimagine uploaded children/family members with adorable chibi proportions (2–3 head chibi for Chibi Kids, true 2-head baby/toddler chibi for 2-Head Baby) with soft rounded limbs, visible human hands and fingers, and proper shoes. Dress every child in modest, festive Lunar New Year kids attire (embroidered red-and-gold tang suit, festive qipao, padded winter vest, auspicious collar or lion-dance cap framing the face without hiding eyebrows or hair). Never give children animal paws, fur, tails or adult model bodies.';
+  'KIDS NATURAL PROPORTIONS AND FESTIVE COSTUME: draw children with natural young-child proportions — about 3.5 to 4.5 heads tall, head size in natural proportion to shoulders and torso, real neck, arms, hands and legs. NEVER a giant head on a tiny 2-head doll body, and never a bobble-head. Dress them in the festive Lunar New Year attire and props described for this design (Tang suit, lantern, tangerine, gold ingot or lion-dance hat). Never give children animal paws, fur or tails.';
 
 const KIDS_STYLE_LOCKED =
-  'STYLE-LOCKED CHARACTER REPLACEMENT (PRINT-FRIENDLY CLEAN CHIBI): Keep Image 1’s exact festive background color palette (whether crimson-red, imperial golden-yellow, royal indigo-blue, peach-coral pink, or jade-emerald green with gold archway) and its clean, uncluttered, print-ready 2D flat/cel-shaded Lunar New Year chibi visual language throughout (bold clean outlines, simple flat color blocks, zero tiny bokeh or complex micro-embroidery so it prints cleanly in CMYK). Uploaded photos supply child/family facial identity cues ONLY (facial landmarks, hairstyle, age and expression). For 2-person duo templates (醒獅孖寶 / 親子拜年), preserve the two-person side-by-side composition using the uploaded people. Never copy any source-photo background or paste a photorealistic head onto a cartoon body; redraw face, hair, hands and simple festive clothing together in one unified, clean print-ready chibi illustration style.';
+  'STYLE-LOCKED ILLUSTRATED CHARACTER (NOT A PHOTO FACE): Image 1 is the master for art style, background, palette, lighting, props, costume and composition. The child must be fully redrawn in exactly the same illustration medium as Image 1 and the ART STYLE below — face, hair, skin, hands and clothes all in one consistent stylized rendering. STRICTLY NO photorealistic or semi-realistic face, no real skin pores, no photographic eyes, no pasted or blended photo head. A parent should recognize their child from hairstyle, face shape, eyes and expression, as in a good commissioned illustration.';
 
 /**
  * Build a filled image-model prompt for a style (worker main-path spirit, simplified).
  * Splits prompt rules between 'pet' (animal breed/coat/accessories) and 'kids' (facial likeness/chibi ratio/festive kids attire).
- * @param {{ styleId: string, category?: 'pet'|'kids', greeting?: string, message?: string, tweak?: string }} opts
+ * @param {{ styleId: string, category?: 'pet'|'kids', greeting?: string, surname?: string, message?: string, tweak?: string }} opts
  * @returns {string}
  */
-export function buildPacketPrompt({ styleId, category, greeting = '', message = '', tweak = '' } = {}) {
+export function buildPacketPrompt({ styleId, category, greeting = '', surname = '', message = '', tweak = '' } = {}) {
   const style = STYLE_BY_ID[styleId] || STYLES[0];
   const resolvedCategory = category || style.category || 'pet';
   const isKids = resolvedCategory === 'kids';
   const g = String(greeting || '').trim() || '恭喜發財';
+  const sn = String(surname || '').trim();
   const msg = String(message || '').trim();
   const tw = String(tweak || '').trim();
 
   const lines = [
     'Create one finished full-bleed Lunar New Year red-envelope (利是封) FRONT artwork, portrait 3.5×6.75 inch (API aspect 2:3), ready for flat printing. No envelope mockup, folds, frames, cut marks or watermarks.',
     '',
-    `TARGET AUDIENCE MODE: ${isKids ? 'KIDS & FAMILY (小朋友／親子 Q版專區 — focus on child facial likeness, cute chibi head-to-body proportions, and festive New Year kids clothing)' : 'PETS & ANIMALS (小動物／毛孩專區 — focus on exact animal species, breed, coat color/markings, and festive pet accessories)'}.`,
+    `TARGET AUDIENCE MODE: ${isKids ? 'KIDS & FAMILY (小朋友／親子專區 — recognizable child likeness drawn in a stylized illustration style, natural child proportions, festive New Year kids clothing)' : 'PETS & ANIMALS (小動物／毛孩專區 — focus on exact animal species, breed, coat color/markings, and festive pet accessories)'}.`,
     '',
     'REFERENCE PRIORITY: the uploaded identities and count are fixed; the chosen greeting content overrides reference wording. Image 1 sets visual medium, composition and lettering treatment. Style descriptions explain how to execute that look, never permission to copy template species or invent a new scene. Where a description differs from the visible original, follow the original, subject to these constraints and the no-white-backdrop requirement.',
     '',
@@ -331,7 +369,7 @@ export function buildPacketPrompt({ styleId, category, greeting = '', message = 
     '',
     'Image 1 = STYLE TEMPLATE (visual master): lock layout, ornaments, colors, lighting and overall composition. Do NOT invent a new scene from scratch.',
     isKids
-      ? 'Image 2+ = SUBJECT IDENTITY only (child / baby / family member). Keep facial features, hairstyle and expression faithful in cute chibi proportions; never copy the template character identity.'
+      ? 'Image 2+ = SUBJECT IDENTITY only (child / baby / family member). MANDATORY CHARACTER REPLACEMENT: the softly blurred figure(s) in Image 1 are placeholder slots — redraw the real child from Image 2 there as an illustrated character in the art style of Image 1, keeping Image 2’s hairstyle and fringe direction, face shape, eye shape, cheek fullness and exact mouth expression (if lips are closed in Image 2, keep lips closed).'
       : 'Image 2+ = SUBJECT IDENTITY only (pet / animal). Keep species, breed, coat color, markings and face faithful; species and anatomy come from these photos, not from the template animal.',
     '',
     isKids ? KIDS_SUBJECT_IDENTITY : PET_SUBJECT_IDENTITY,
@@ -351,13 +389,14 @@ export function buildPacketPrompt({ styleId, category, greeting = '', message = 
 
   lines.push(
     `STYLE-SPECIFIC ART DIRECTION (${style.profileKey || style.id}):`,
+    ...(style.artStyle ? [`ART STYLE (mandatory for the whole image, including every face): ${style.artStyle}`] : []),
     `SCENE, PALETTE AND MATERIAL: ${style.scene}`,
     `SUBJECT INTEGRATION: ${style.subject}`,
     `STYLE-SPECIFIC DEFECTS TO AVOID: ${style.avoid}`,
     '',
     `GREETING TEXT (mandatory): Render EXACTLY this Traditional Chinese greeting once: "${g}". In the UPPER reserved calligraphy area of the template (classic HK laisee top plaque — never the bottom), REPLACE any baked-in sample greeting calligraphy already on Image 1. Do not leave the old template text visible; fully overwrite it. Match brush treatment from Image 1 and this LETTERING brief.`,
     `LETTERING ART DIRECTION (${style.profileKey || style.id}): ${style.lettering}`,
-    'CHINESE GLYPH QUALITY: complete Traditional Chinese forms only — no Simplified substitutions, invented radicals, fuzzy gold glow or thick outline rescue. Remove all original template wording so only this greeting remains once. No spring-couplet parchment plate unless Image 1 already has one; keep brush calligraphy floating on the design.',
+    'CHINESE GLYPH QUALITY: complete Traditional Chinese (繁體中文) forms only — strictly use Traditional radicals (e.g. 財 with 貝 never 财/贝, 發 never 发, 樂 never 乐, 進 never 进, 體 never 体, 聰 never 聪, 滿 never 满, 長 never 长). No Simplified substitutions, invented radicals, fuzzy gold glow or thick outline rescue. Remove all original template wording so only this greeting remains once. No empty/blank scroll plaque plates left behind; keep brush calligraphy floating cleanly on the design.',
     'Draw no extra words, logos, watermarks, numbers or placeholder marks beyond the exact requested greeting.',
     'Use the selected design palette, clear print-friendly edges and depth. Extend the scene continuously to all four edges: no white canvas, white margins, blank panels, transparent holes or photo-background remnants.',
     'FINAL IMAGE CHECK BEFORE RETURNING: verify every requested character has complete correct strokes; verify every intended subject retains its identity and has no straight photo-crop edge, white backdrop or pasted-photo panel; verify colored artwork reaches every edge.'
