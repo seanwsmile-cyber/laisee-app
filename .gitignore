@@ -16,3 +16,5 @@ tmp/
 shots/*
 !shots/.gitkeep
 assets/test-photo*.jpg
+
+cloudflared.exe
