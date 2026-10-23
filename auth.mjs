@@ -17,10 +17,23 @@ const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 const GOOGLE_REDIRECT_URI =
   process.env.GOOGLE_REDIRECT_URI ||
   'http://127.0.0.1:8765/auth/google/callback';
-const EPRINT_AUTH_URL = process.env.EPRINT_AUTH_URL || '';
-const EPRINT_AUTH_ENABLED = !/^(0|false|no)$/i.test(
-  String(process.env.EPRINT_AUTH_ENABLED ?? (EPRINT_AUTH_URL ? '1' : '0'))
-);
+const PRODUCTION = process.env.NODE_ENV === 'production';
+
+export function validateAuthConfig(publicUrl) {
+  if (!PRODUCTION) return;
+  if (AUTH_DISABLED) throw new Error('AUTH_DISABLED is forbidden in production');
+  if (SESSION_SECRET.length < 32 || /dev-only|example|change.?me|replace/i.test(SESSION_SECRET)) {
+    throw new Error('Production requires a random SESSION_SECRET of at least 32 characters');
+  }
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) throw new Error('Production Google OAuth credentials are required');
+  const callback = new URL(GOOGLE_REDIRECT_URI);
+  if (callback.href !== new URL('/auth/google/callback', publicUrl).href) {
+    throw new Error('GOOGLE_REDIRECT_URI must equal PUBLIC_URL + /auth/google/callback');
+  }
+  if (/^(0|false|no)$/i.test(String(process.env.COOKIE_SECURE || ''))) {
+    throw new Error('Secure cookies cannot be disabled in production');
+  }
+}
 
 function b64url(buf) {
   return Buffer.from(buf)
@@ -77,7 +90,7 @@ function cookieHeader(name, value, { maxAge, clear = false } = {}) {
     parts.push(`Max-Age=${maxAge}`);
   }
   // Local http://127.0.0.1 — no Secure flag (dev). Set COOKIE_SECURE=1 for HTTPS.
-  if (/^(1|true|yes)$/i.test(String(process.env.COOKIE_SECURE || ''))) {
+  if (PRODUCTION || /^(1|true|yes)$/i.test(String(process.env.COOKIE_SECURE || ''))) {
     parts.push('Secure');
   }
   return parts.join('; ');
@@ -87,9 +100,9 @@ export function authPublicConfig() {
   return {
     authDisabled: AUTH_DISABLED,
     googleConfigured: !!(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET),
-    eprintConfigured: !!(EPRINT_AUTH_ENABLED && EPRINT_AUTH_URL),
-    eprintEnabled: EPRINT_AUTH_ENABLED,
-    eprintHasUrl: !!EPRINT_AUTH_URL,
+    eprintConfigured: false,
+    eprintEnabled: false,
+    eprintHasUrl: false,
   };
 }
 
@@ -189,9 +202,13 @@ function redirect(res, location, setCookie) {
 }
 
 function htmlError(res, status, title, message) {
+  const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  title = escape(title);
+  message = escape(message);
   const body = `<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8"><title>${title}</title></head><body style="font-family:system-ui;padding:2rem"><h1>${title}</h1><p>${message}</p><p><a href="/">返回</a></p></body></html>`;
   res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(body);
+  return true;
 }
 
 async function exchangeGoogleCode(code) {
@@ -203,6 +220,7 @@ async function exchangeGoogleCode(code) {
     grant_type: 'authorization_code',
   });
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+    signal: AbortSignal.timeout(15000),
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
@@ -214,6 +232,7 @@ async function exchangeGoogleCode(code) {
     throw err;
   }
   const infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    signal: AbortSignal.timeout(15000),
     headers: { Authorization: `Bearer ${tokenJson.access_token}` },
   });
   const info = await infoRes.json().catch(() => ({}));
@@ -331,25 +350,20 @@ export async function handleAuthRoutes(req, res, { sendJson, urlPath, urlObj }) 
       });
       res.end();
     } catch (e) {
-      console.error('[auth/google] callback failed:', e.message);
+      console.error('[auth/google] callback failed');
       return htmlError(res, 502, 'Google 登入失敗', '換取 token 或讀取 userinfo 失敗。請稍後再試。');
     }
     return true;
   }
 
-  // e-print SSO start (plug-in; only redirects when URL configured)
+  // SSO has no verified callback yet; never advertise or redirect to it.
   if (method === 'GET' && urlPath === '/auth/eprint') {
-    if (!EPRINT_AUTH_ENABLED || !EPRINT_AUTH_URL) {
       return htmlError(
         res,
         503,
         'e-print 登入即將推出',
-        '尚未接上 e-print SSO。請見 AUTH-SETUP.md，並向 e-print 索取 authorize URL／client id／callback／userinfo 格式。'
+        '請使用 Google 登入。'
       );
-    }
-    // Placeholder: redirect to their authorize URL as-is (Sean wires query params later)
-    redirect(res, EPRINT_AUTH_URL);
-    return true;
   }
 
   // Reserved callback for future e-print SSO

@@ -11,17 +11,24 @@ import fs from 'node:fs';
 import path from 'node:path';
 import dns from 'node:dns';
 import { fileURLToPath } from 'node:url';
+import crypto from 'node:crypto';
+import { isIP } from 'node:net';
+import { STYLES, buildPacketPrompt } from './js/styles.js';
+import { createUsageStore, clientIp } from './usage-store.mjs';
 
-// Avoid IPv6 blackhole / UND_ERR_CONNECT_TIMEOUT on Windows VPN adapters when calling OpenRouter/Gemini
+// Keep local VPN adapters with unavailable IPv6 from timing out provider requests.
 dns.setDefaultResultOrder('ipv4first');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;
+if (process.env.LOAD_DOTENV !== '0') loadDotEnv(path.join(ROOT, '.env'));
 const PORT = Number(process.env.PORT || 8765);
-/** Local default 127.0.0.1; set HOST=0.0.0.0 on Fly/Render/Railway */
 const HOST = process.env.HOST || '127.0.0.1';
-
-loadDotEnv(path.join(ROOT, '.env'));
+const PRODUCTION = process.env.NODE_ENV === 'production';
+const PUBLIC_URL = process.env.PUBLIC_URL || `http://127.0.0.1:${PORT}`;
+const PUBLIC_ORIGIN = new URL(PUBLIC_URL).origin;
+const SITE_OPERATOR = (process.env.SITE_OPERATOR || '').trim();
+const SUPPORT_EMAIL = (process.env.SUPPORT_EMAIL || '').trim();
 
 const {
   handleAuthRoutes,
@@ -29,9 +36,19 @@ const {
   authPublicConfig,
   sessionWarning,
   AUTH_DISABLED,
+  validateAuthConfig,
 } = await import('./auth.mjs');
 
+if (PRODUCTION) {
+  const publicUrl = new URL(PUBLIC_URL);
+  if (publicUrl.protocol !== 'https:' || publicUrl.username || publicUrl.password || publicUrl.pathname !== '/' || publicUrl.search || publicUrl.hash) throw new Error('Production requires an HTTPS PUBLIC_URL origin');
+  if (!SITE_OPERATOR || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(SUPPORT_EMAIL)) throw new Error('Production requires SITE_OPERATOR and a valid SUPPORT_EMAIL');
+  if (!process.env.GEN_USAGE_FILE || !path.isAbsolute(process.env.GEN_USAGE_FILE)) throw new Error('Production requires an absolute GEN_USAGE_FILE on a persistent volume');
+}
+validateAuthConfig(PUBLIC_URL);
+
 const AI_PROVIDER = (process.env.AI_PROVIDER || 'gemini').toLowerCase();
+if (!['gemini', 'openrouter'].includes(AI_PROVIDER)) throw new Error('Unsupported AI_PROVIDER');
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 const AI_MOCK = /^(1|true|yes)$/i.test(String(process.env.AI_MOCK || ''));
@@ -39,12 +56,37 @@ const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-image';
 const OPENROUTER_MODEL =
   process.env.OPENROUTER_MODEL || 'google/gemini-2.5-flash-image';
 const OPENROUTER_ASPECT_RATIO =
-  process.env.OPENROUTER_ASPECT_RATIO || '2:3';
+  (process.env.OPENROUTER_ASPECT_RATIO || (OPENROUTER_MODEL.startsWith('bytedance-seed/') ? '1:2' : '9:16')).trim();
+const ratioParts = /^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$/.exec(OPENROUTER_ASPECT_RATIO);
+const nativeRatio = ratioParts ? Number(ratioParts[1]) / Number(ratioParts[2]) : NaN;
+const trimRatio = 14 / 27;
+if (!Number.isFinite(nativeRatio) || nativeRatio <= 0 || 1 - Math.min(nativeRatio / trimRatio, trimRatio / nativeRatio) > 0.09) {
+  throw new Error('OPENROUTER_ASPECT_RATIO must be a positive W:H ratio needing at most 9% cropping to 14:27; use 1:2 for Seedream or 9:16 for Gemini');
+}
 /** Prefer dedicated Image API; set OPENROUTER_IMAGE_API=0 to chat-only */
 const OPENROUTER_IMAGE_API = !/^(0|false|no)$/i.test(
   String(process.env.OPENROUTER_IMAGE_API ?? '1')
 );
 const MAX_BODY = 12 * 1024 * 1024; // 12 MB
+const AI_TIMEOUT_MS = integerSetting('AI_TIMEOUT_MS', 90000, 1000, 120000);
+const TRUSTED_PROXIES = (process.env.TRUSTED_PROXY_IPS || '').split(',').map((ip) => ip.trim().replace(/^::ffff:/, '')).filter(Boolean);
+if (TRUSTED_PROXIES.some((ip) => !isIP(ip))) throw new Error('TRUSTED_PROXY_IPS must contain exact IP addresses');
+const usageStore = createUsageStore({
+  file: process.env.GEN_USAGE_FILE || path.join(ROOT, 'tmp', 'gen-usage.json'),
+  secret: process.env.SESSION_SECRET || 'local-dev-usage-salt',
+  dailyLimit: integerSetting('DAILY_GEN_LIMIT', 100, 0, 100000),
+  accountLimit: integerSetting('ACCOUNT_DAILY_GEN_LIMIT', 5, 0, 10000),
+  ipDailyLimit: integerSetting('IP_DAILY_GEN_LIMIT', 20, 0, 100000),
+  ipLimit: integerSetting('IP_GEN_LIMIT', 10, 1, 10000),
+  ipWindowMs: integerSetting('IP_GEN_WINDOW_MS', 600000, 1000, 86400000),
+  concurrency: integerSetting('MAX_CONCURRENT_GENERATIONS', 3, 1, 20),
+});
+
+function integerSetting(name, fallback, min, max) {
+  const value = Number(process.env[name] ?? fallback);
+  if (!Number.isSafeInteger(value) || value < min || value > max) throw new Error(`${name} must be an integer from ${min} to ${max}`);
+  return value;
+}
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -85,6 +127,9 @@ function loadDotEnv(file) {
 }
 
 function aiStatus() {
+  if (/^(1|true|yes)$/i.test(process.env.AI_DISABLED || '') || (process.env.AI_DISABLE_FILE && fs.existsSync(process.env.AI_DISABLE_FILE))) {
+    return { ready: false, mode: 'disabled', provider: AI_PROVIDER };
+  }
   if (AI_MOCK) {
     return { ready: false, mode: 'mock', provider: AI_PROVIDER, reason: 'AI_MOCK=1' };
   }
@@ -109,6 +154,7 @@ function aiStatus() {
 }
 
 function sendJson(res, status, obj) {
+  if (res.writableEnded || res.destroyed) return;
   const body = JSON.stringify(obj);
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
@@ -117,28 +163,23 @@ function sendJson(res, status, obj) {
   res.end(body);
 }
 
-function safeJoin(root, urlPath) {
-  const decoded = decodeURIComponent(urlPath.split('?')[0]);
-  const cleaned = path.normalize(decoded).replace(/^(\.\.[/\\])+/, '');
-  const full = path.join(root, cleaned);
-  if (!full.startsWith(root)) return null;
-  return full;
-}
-
 function readBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0;
+    let tooLarge = false;
     req.on('data', (c) => {
       size += c.length;
       if (size > MAX_BODY) {
-        reject(Object.assign(new Error('Body too large'), { status: 413 }));
-        req.destroy();
+        if (!tooLarge) reject(Object.assign(new Error('相片資料太大，請縮細後重試。'), { status: 413, code: 'PAYLOAD_TOO_LARGE' }));
+        tooLarge = true;
+        chunks.length = 0;
         return;
       }
       chunks.push(c);
     });
-    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('end', () => { if (!tooLarge) resolve(Buffer.concat(chunks)); });
+    req.on('aborted', () => reject(new Error('Request aborted')));
     req.on('error', reject);
   });
 }
@@ -148,7 +189,7 @@ function stripDataUrl(dataUrlOrB64) {
   const s = String(dataUrlOrB64);
   const m = /^data:([^;]+);base64,(.+)$/s.exec(s);
   if (m) return { mime: m[1], data: m[2] };
-  return { mime: 'image/jpeg', data: s };
+  return { mime: null, data: null };
 }
 
 function extractGeminiImage(payload) {
@@ -251,6 +292,7 @@ async function callGemini({ prompt, photos, styleImage }) {
 
   const url = 'https://generativelanguage.googleapis.com/v1beta/interactions';
   const res = await fetch(url, {
+    signal: AbortSignal.timeout(AI_TIMEOUT_MS),
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -258,11 +300,12 @@ async function callGemini({ prompt, photos, styleImage }) {
     },
     body: JSON.stringify({
       model: GEMINI_MODEL,
+      store: false,
       input,
       response_format: {
         type: 'image',
         mime_type: 'image/png',
-        aspect_ratio: '2:3',
+        aspect_ratio: '9:16',
         image_size: '1K',
       },
     }),
@@ -296,20 +339,9 @@ function openRouterHeaders() {
   return {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-    'HTTP-Referer': 'http://127.0.0.1:8765',
-    'X-Title': 'e-print AI Laisee (local)',
+    'HTTP-Referer': PUBLIC_ORIGIN,
+    'X-Title': 'AI Laisee',
   };
-}
-
-function photosToDataUrls(photos, max = 3) {
-  const out = [];
-  for (const p of photos.slice(0, max)) {
-    const raw = String(p);
-    out.push(
-      raw.startsWith('data:') ? raw : `data:image/jpeg;base64,${raw}`
-    );
-  }
-  return out;
 }
 
 /**
@@ -376,6 +408,7 @@ async function callOpenRouterImages({ prompt, photos, styleImage }) {
     }));
   }
   const res = await fetch('https://openrouter.ai/api/v1/images', {
+    signal: AbortSignal.timeout(AI_TIMEOUT_MS),
     method: 'POST',
     headers: openRouterHeaders(),
     body: JSON.stringify(body),
@@ -391,195 +424,116 @@ async function callOpenRouterChat({ prompt, photos, styleImage }) {
     content.push({ type: 'image_url', image_url: { url } });
   }
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    signal: AbortSignal.timeout(AI_TIMEOUT_MS),
     method: 'POST',
     headers: openRouterHeaders(),
     body: JSON.stringify({
       model: OPENROUTER_MODEL,
       messages: [{ role: 'user', content }],
       modalities: ['image', 'text'],
+      image_config: { aspect_ratio: OPENROUTER_ASPECT_RATIO },
     }),
   });
   return parseOpenRouterResponse(res);
 }
 
-async function callOpenRouter({ prompt, photos, styleImage }) {
-  let imageErr = null;
-  if (OPENROUTER_IMAGE_API) {
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        return await callOpenRouterImages({ prompt, photos, styleImage });
-      } catch (err) {
-        imageErr = err;
-        console.error(
-          `[api/generate] OpenRouter Image API attempt ${attempt} failed:`,
-          err.message
-        );
-        if (attempt < 2) {
-          await new Promise((r) => setTimeout(r, 800));
-        }
-      }
-    }
-  }
-  // Pure image models (Seedream, Flux, Imagen, Ideogram, Recraft) do not have a /chat/completions endpoint
-  if (/seedream|flux|imagen|ideogram|recraft/i.test(OPENROUTER_MODEL) && imageErr) {
-    throw imageErr;
-  }
-  try {
-    return await callOpenRouterChat({ prompt, photos, styleImage });
-  } catch (chatErr) {
-    throw imageErr || chatErr;
-  }
+async function callOpenRouter(options) {
+  // One billable request per reservation. A timeout can still have been billed.
+  return OPENROUTER_IMAGE_API ? callOpenRouterImages(options) : callOpenRouterChat(options);
 }
 
-// ---- Generation rate limits (global daily cap + per-IP) ----
-const DAILY_GEN_LIMIT = Math.max(0, Number(process.env.DAILY_GEN_LIMIT || 100));
-const IP_GEN_LIMIT = Math.max(1, Number(process.env.IP_GEN_LIMIT || 30));
-const IP_GEN_WINDOW_MS = Math.max(1000, Number(process.env.IP_GEN_WINDOW_MS || 10 * 60 * 1000));
-const ENFORCE_LOCAL_RATE_LIMIT = /^(1|true|yes)$/i.test(String(process.env.ENFORCE_LOCAL_RATE_LIMIT || ''));
-const USAGE_FILE = process.env.GEN_USAGE_FILE || path.join(ROOT, 'tmp', 'gen-usage.json');
-const ipHits = new Map();
-function shanghaiDay(d = new Date()) {
-  return new Date(d.getTime() + 8 * 3600 * 1000).toISOString().slice(0, 10);
-}
-function loadUsage() {
-  try {
-    const j = JSON.parse(fs.readFileSync(USAGE_FILE, 'utf8'));
-    if (j && j.day === shanghaiDay()) return { day: j.day, count: Number(j.count) || 0 };
-  } catch {}
-  return { day: shanghaiDay(), count: 0 };
-}
-function saveUsage(u) {
-  try {
-    fs.mkdirSync(path.dirname(USAGE_FILE), { recursive: true });
-    fs.writeFileSync(USAGE_FILE + '.tmp', JSON.stringify(u));
-    fs.renameSync(USAGE_FILE + '.tmp', USAGE_FILE);
-  } catch (err) {
-    console.error('[ratelimit] save failed', err.message);
-  }
-}
-function clientIp(req) {
-  const cf = req.headers['cf-connecting-ip'];
-  if (cf) return String(cf).trim();
-  const xff = req.headers['x-forwarded-for'];
-  if (xff) return String(xff).split(',')[0].trim();
-  return req.socket?.remoteAddress || 'unknown';
-}
-function isLoopbackIp(ip) {
-  return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+function publicAiStatus() {
+  const { ready, mode, provider } = aiStatus();
+  return { ready, mode, provider };
 }
 
-/** Returns null if allowed, else {scope, message, retryAfter}. Quota is recorded via recordGenSuccess after upstream succeeds. */
-function checkGenLimit(req) {
-  const now = Date.now();
-  const ip = clientIp(req);
-  if (isLoopbackIp(ip) && !ENFORCE_LOCAL_RATE_LIMIT) {
-    return null;
-  }
-  const hits = (ipHits.get(ip) || []).filter((t) => now - t < IP_GEN_WINDOW_MS);
-  ipHits.set(ip, hits);
-  if (hits.length >= IP_GEN_LIMIT) {
-    const mins = Math.max(1, Math.ceil((IP_GEN_WINDOW_MS - (now - hits[0])) / 60000));
-    return { message: `你用得太快喇！請等大約 ${mins} 分鐘再試 🙏`, scope: 'ip', retryAfter: mins * 60 };
-  }
-  const u = loadUsage();
-  if (u.count >= DAILY_GEN_LIMIT) {
-    return { message: `今日 AI 生成名額（${DAILY_GEN_LIMIT} 次）已經用晒喇，聽日（香港時間午夜後）再嚟啦 🧧`, scope: 'daily', retryAfter: 3600 };
-  }
-  return null;
+function usageFor(req, user) {
+  const ai = publicAiStatus();
+  const usage = usageStore.usage(user.provider + ':' + user.sub, clientIp(req, TRUSTED_PROXIES));
+  usage.available = ai.ready && usage.available;
+  return { ai, usage };
 }
 
-function recordGenSuccess(req) {
-  const now = Date.now();
-  const ip = clientIp(req);
-  const hits = (ipHits.get(ip) || []).filter((t) => now - t < IP_GEN_WINDOW_MS);
-  hits.push(now);
-  ipHits.set(ip, hits);
-  const u = loadUsage();
-  u.count += 1;
-  saveUsage(u);
+function badRequest(message = '生成資料無效，請重新選擇相片及款式。') {
+  return Object.assign(new Error(message), { status: 400, code: 'BAD_REQUEST' });
 }
-function genUsage() {
-  const u = loadUsage();
-  return { day: u.day, used: u.count, limit: DAILY_GEN_LIMIT, remaining: Math.max(0, DAILY_GEN_LIMIT - u.count) };
+
+function validatePayload(body) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) throw badRequest();
+  const fields = ['style', 'category', 'greeting', 'message', 'tweak', 'photos'];
+  if (Object.keys(body).some((key) => !fields.includes(key))) throw badRequest();
+  const style = STYLES.find((item) => item.id === body.style);
+  if (!style || body.category !== style.category) throw badRequest('款式或分類無效。');
+  for (const [field, max] of [['greeting', 30], ['message', 30], ['tweak', 300]]) {
+    if (body[field] === undefined) body[field] = '';
+    if (typeof body[field] !== 'string' || [...body[field]].length > max || /[\u0000-\u0008\u000b-\u001f]/.test(body[field])) throw badRequest('賀詞或修改要求太長或包含無效文字。');
+  }
+  if (!body.greeting.trim()) throw badRequest('請輸入賀詞。');
+  if (!Array.isArray(body.photos) || body.photos.length < 1 || body.photos.length > 2) throw badRequest('請選擇 1 至 2 張相片。');
+  for (const photo of body.photos) {
+    if (typeof photo !== 'string' || photo.length > 4 * 1024 * 1024 + 64) throw badRequest('相片太大。');
+    const match = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/]+={0,2})$/.exec(photo);
+    if (!match || match[2].length % 4 !== 0) throw badRequest('相片須為 JPEG、PNG 或 WebP。');
+    const bytes = Buffer.from(match[2], 'base64');
+    const mime = match[1];
+    const signatureOk = mime === 'image/jpeg' ? bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255
+      : mime === 'image/png' ? bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+      : bytes.subarray(0, 4).toString() === 'RIFF' && bytes.subarray(8, 12).toString() === 'WEBP';
+    if (!signatureOk || bytes.length > 3 * 1024 * 1024 || bytes.toString('base64') !== match[2]) throw badRequest('相片資料無效或太大。');
+  }
+  const prompt = buildPacketPrompt({ styleId: style.id, category: style.category, greeting: body.greeting, message: body.message, tweak: body.tweak });
+  const styleImage = style.skipTemplateImage ? null : 'data:image/jpeg;base64,' + fs.readFileSync(path.join(ROOT, style.image.split('?')[0])).toString('base64');
+  return { prompt, photos: body.photos, styleImage };
 }
 
 async function handleGenerate(req, res) {
-  if (!requireAuth(req, res, sendJson)) return;
-  const status = aiStatus();
+  const user = requireAuth(req, res, sendJson);
+  if (!user) return;
+  if (!/^application\/json(?:\s*;|$)/i.test(req.headers['content-type'] || '')) {
+    return sendJson(res, 415, { ok: false, error: 'UNSUPPORTED_MEDIA_TYPE', message: '請使用 JSON 格式。', fallback: true });
+  }
+  if (Number(req.headers['content-length'] || 0) > MAX_BODY) {
+    req.resume();
+    return sendJson(res, 413, { ok: false, error: 'PAYLOAD_TOO_LARGE', message: '相片資料太大。', fallback: true });
+  }
   let body;
-  try {
-    const raw = await readBody(req);
-    body = raw.length ? JSON.parse(raw.toString('utf8')) : {};
-  } catch (err) {
-    return sendJson(res, err.status || 400, {
-      ok: false,
-      error: 'BAD_REQUEST',
-      message: err.message || 'Invalid JSON body',
-      fallback: true,
-    });
+  try { body = JSON.parse((await readBody(req)).toString('utf8')); }
+  catch (error) {
+    return sendJson(res, error.status || 400, { ok: false, error: error.code || 'BAD_REQUEST', message: '無法讀取生成資料，請重新選擇相片。', fallback: true });
   }
-
-  const prompt = String(body.prompt || '').trim();
-  if (!prompt) {
-    return sendJson(res, 400, {
-      ok: false,
-      error: 'MISSING_PROMPT',
-      message: 'prompt is required',
-      fallback: true,
-    });
-  }
-  const photos = Array.isArray(body.photos) ? body.photos : [];
-  const styleImage = body.styleImage || body.style_image || null;
-
+  const options = validatePayload(body);
+  const status = aiStatus();
   if (!status.ready) {
     return sendJson(res, 503, {
       ok: false,
-      error: status.mode === 'mock' ? 'AI_MOCK' : 'AI_NOT_CONFIGURED',
-      message:
-        status.mode === 'mock'
-          ? 'AI_MOCK=1 — 唔會 call 付費 API；請用前端 Canvas fallback'
-          : `${status.reason}。請喺 .env 設定 key，或繼續用本地 Canvas 合成。`,
+      error: status.mode === 'mock' ? 'AI_MOCK' : status.mode === 'disabled' ? 'AI_DISABLED' : 'AI_NOT_CONFIGURED',
+      message: 'AI 生成暫未開放，可使用本地相片合成。',
       fallback: true,
-      ai: status,
+      ai: publicAiStatus(),
     });
   }
-
-  const limited = checkGenLimit(req);
-  if (limited) {
-    res.setHeader('Retry-After', String(limited.retryAfter));
-    return sendJson(res, 429, {
-      ok: false,
-      error: 'RATE_LIMITED',
-      scope: limited.scope,
-      message: limited.message,
-      fallback: true,
-    });
-  }
-
+  const release = usageStore.reserve(user.provider + ':' + user.sub, clientIp(req, TRUSTED_PROXIES));
+  const started = Date.now();
+  const requestId = crypto.randomUUID();
+  let outcome = 'failed';
   try {
-    const img =
-      status.provider === 'openrouter'
-        ? await callOpenRouter({ prompt, photos, styleImage })
-        : await callGemini({ prompt, photos, styleImage });
-    recordGenSuccess(req);
-    return sendJson(res, 200, {
-      ok: true,
-      mode: 'ai',
-      provider: status.provider,
-      model: status.model,
-      mime: img.mime || 'image/png',
-      imageBase64: img.data,
-      dataUrl: `data:${img.mime || 'image/png'};base64,${img.data}`,
-    });
-  } catch (err) {
-    console.error('[api/generate]', err.message);
-    return sendJson(res, err.status || 502, {
+    const img = status.provider === 'openrouter' ? await callOpenRouter(options) : await callGemini(options);
+    if (!/^image\/(?:png|jpeg|webp)$/.test(img.mime) || typeof img.data !== 'string' || img.data.length > 32 * 1024 * 1024 || !/^[A-Za-z0-9+/]+={0,2}$/.test(img.data)) throw new Error('Invalid upstream image');
+    outcome = 'success';
+    return sendJson(res, 200, { ok: true, mode: 'ai', mime: img.mime, imageBase64: img.data, dataUrl: 'data:' + img.mime + ';base64,' + img.data });
+  } catch (error) {
+    const timeout = error.name === 'TimeoutError' || error.name === 'AbortError';
+    outcome = timeout ? 'timeout' : 'failed';
+    return sendJson(res, timeout ? 504 : 502, {
       ok: false,
-      error: 'UPSTREAM_FAILED',
-      message: err.message || 'Upstream AI failed',
+      error: timeout ? 'UPSTREAM_TIMEOUT' : 'UPSTREAM_FAILED',
+      message: timeout ? 'AI 回應超時。今次嘗試已計入額度，可稍後重試或使用本地合成。' : 'AI 暫時未能完成。今次嘗試已計入額度，可稍後重試或使用本地合成。',
       fallback: true,
-      detail: err.detail || undefined,
+      requestId,
     });
+  } finally {
+    release();
+    console.log(JSON.stringify({ event: 'generation', requestId, outcome, durationMs: Date.now() - started }));
   }
 }
 
@@ -604,80 +558,82 @@ function serveStatic(req, res) {
     });
     res.end(data);
   });
+  res.end(req.method === 'HEAD' ? undefined : data);
+}
+
+function securityHeaders(res) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://lh3.googleusercontent.com; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
+  if (PRODUCTION) res.setHeader('Strict-Transport-Security', 'max-age=31536000');
+}
+
+function sameOrigin(req) {
+  if (req.headers['sec-fetch-site'] === 'cross-site') return false;
+  const origin = req.headers.origin;
+  if (!origin) return !PRODUCTION; // browser mutation requests require Origin online
+  if (origin === PUBLIC_ORIGIN) return true;
+  if (!PRODUCTION && [ 'http://localhost:' + PORT, 'http://127.0.0.1:' + PORT ].includes(origin)) return true;
+  return false;
 }
 
 const server = http.createServer(async (req, res) => {
-  let urlObj;
-  let urlPath;
+  securityHeaders(res);
   try {
-    // Fixed base avoids Host-header poisoning; collapse leading // so protocol-relative
-    // paths (e.g. "//") cannot throw and take down the process.
-    const pathAndQuery = (req.url || '/').replace(/^\/+/, '/');
-    urlObj = new URL(pathAndQuery, 'http://localhost');
-    urlPath = urlObj.pathname;
-  } catch (err) {
-    console.error('[url]', err.message);
-    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
-    return res.end('Bad Request');
-  }
-
-  if (req.method === 'GET' && urlPath === '/api/health') {
-    return sendJson(res, 200, {
-      ok: true,
-      ai: aiStatus(),
-      auth: authPublicConfig(),
-      usage: genUsage(),
-    });
-  }
-
-  try {
-    if (await handleAuthRoutes(req, res, { sendJson, urlPath, urlObj })) {
+    const rawPath = (req.url || '/').split('?')[0];
+    if (!rawPath.startsWith('/') || rawPath.startsWith('//')) throw badRequest();
+    const urlPath = decodeURIComponent(rawPath);
+    if (/[\\\u0000-\u001f]/.test(urlPath) || urlPath.split('/').some((part) => part === '.' || part === '..')) throw badRequest();
+    const urlObj = new URL(req.url, PUBLIC_ORIGIN);
+    if (req.method === 'POST' && !sameOrigin(req)) return sendJson(res, 403, { ok: false, error: 'ORIGIN_DENIED', message: '請由網站內操作。', fallback: false });
+    if (req.method === 'GET' && urlPath === '/api/health') {
+      return sendJson(res, 200, { ok: true, ai: publicAiStatus(), auth: authPublicConfig() });
+    }
+    if (req.method === 'GET' && urlPath === '/api/site-config') {
+      return sendJson(res, 200, { operatorName: SITE_OPERATOR, supportEmail: SUPPORT_EMAIL, aiProvider: AI_PROVIDER });
+    }
+    if (req.method === 'GET' && urlPath === '/api/usage') {
+      const user = requireAuth(req, res, sendJson);
+      if (user) sendJson(res, 200, { ok: true, ...usageFor(req, user) });
       return;
     }
-  } catch (err) {
-    console.error('[auth]', err.message);
-    return sendJson(res, 500, { ok: false, error: 'AUTH_ERROR', message: 'Auth handler failed' });
-  }
-
-  if (req.method === 'POST' && urlPath === '/api/generate') {
-    return handleGenerate(req, res);
-  }
-  if (req.method === 'OPTIONS' && urlPath.startsWith('/api/')) {
-    res.writeHead(204, {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Allow-Credentials': 'true',
+    if (await handleAuthRoutes(req, res, { sendJson, urlPath, urlObj })) return;
+    if (req.method === 'POST' && urlPath === '/api/generate') return await handleGenerate(req, res);
+    if (req.method === 'GET' || req.method === 'HEAD') return await serveStatic(req, res, urlPath);
+    return sendJson(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
+  } catch (error) {
+    const known = error.status && error.code;
+    if (error.status === 429) res.setHeader('Retry-After', error.code === 'BUSY' ? '10' : '600');
+    if (!known && !(error instanceof URIError)) console.error(JSON.stringify({ event: 'request_error', code: 'INTERNAL_ERROR' }));
+    return sendJson(res, known ? error.status : error instanceof URIError ? 400 : 500, {
+      ok: false,
+      error: known ? error.code : error instanceof URIError ? 'BAD_REQUEST' : 'INTERNAL_ERROR',
+      message: known ? error.message : '暫時未能處理，請稍後再試。',
+      scope: error.scope,
+      fallback: true,
     });
-    return res.end();
   }
-  if (req.method === 'GET' || req.method === 'HEAD') {
-    return serveStatic(req, res);
-  }
-  res.writeHead(405);
-  res.end('Method Not Allowed');
 });
 
+server.requestTimeout = 30000;
+server.headersTimeout = 15000;
+server.keepAliveTimeout = 5000;
+server.on('error', () => { usageStore.close(); process.exitCode = 1; console.error('[laisee] server failed to start'); });
+server.on('close', () => usageStore.close());
+process.on('exit', () => usageStore.close());
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.once(signal, () => {
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(0), 130000).unref();
+  });
+}
 server.listen(PORT, HOST, () => {
-  const st = aiStatus();
-  const ac = authPublicConfig();
-  console.log(`[laisee] http://${HOST}:${PORT}/`);
-  console.log(
-    `[laisee] AI provider=${st.provider} mode=${st.mode}` +
-      (st.ready ? ` model=${st.model}` : ` (${st.reason})`)
-  );
-  if (!st.ready) {
-    console.log(
-      '[laisee] 無可用 AI key / mock — /api/generate 會回 fallback；前端會用 Canvas 合成'
-    );
-  }
-  if (AUTH_DISABLED) {
-    console.log('[laisee] AUTH_DISABLED=1 — login gate bypassed for local/dev');
-  } else {
-    console.log(
-      `[laisee] auth google=${ac.googleConfigured ? 'ready' : 'unconfigured'} eprint=${ac.eprintConfigured ? 'url-set' : 'pending'}`
-    );
-    const warn = sessionWarning();
-    if (warn) console.warn(`[laisee] ${warn}`);
-  }
+  console.log('[laisee] http://' + HOST + ':' + PORT + '/');
+  console.log('[laisee] AI provider=' + AI_PROVIDER + ' mode=' + aiStatus().mode);
+  if (AUTH_DISABLED) console.log('[laisee] AUTH_DISABLED=1 — local development only');
+  const warning = sessionWarning();
+  if (warning) console.warn('[laisee] ' + warning);
 });

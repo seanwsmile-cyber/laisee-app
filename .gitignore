@@ -2,12 +2,17 @@ node_modules/
 .DS_Store
 *.log
 .env
-.env.local
-.env.*.local
-cloudflared.exe
+.env.*
+!.env.example
+!.env.production.example
+.npm-cache/
+node/
+data/
+*.lock.tmp
 
 # local AI test outputs
 tmp-ai-*
 tmp/
-shots/*.png
+shots/*
 !shots/.gitkeep
+assets/test-photo*.jpg

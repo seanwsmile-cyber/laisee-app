@@ -83,8 +83,13 @@ const state = {
   surnameFormat: 'none', // 'none' | 'char' | 'shi' | 'fu' | 'jia'
   message: '',
   tweak: '',
-  previewView: 'diecut', // 'diecut' | 'front'
+  previewView: 'front', // 'diecut' | 'front'
   result: null, // { canvas, diecutCanvas, blob, dataUrl }
+  usage: null,
+  usageLoading: false,
+  generating: false,
+  guardianConsent: false,
+  generationError: null,
 };
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -129,8 +134,8 @@ function applyI18n() {
     }
   });
   // photo remove buttons
-  $$('.photo-thumb .remove').forEach((btn) => {
-    btn.setAttribute('aria-label', tr('removePhoto'));
+  $$('.photo-thumb .remove').forEach((btn, i) => {
+    btn.setAttribute('aria-label', tr('removePhotoAt', { n: i + 1 }));
   });
   // greeting chips
   const presets = getGreetingPresets();
@@ -142,6 +147,9 @@ function applyI18n() {
   syncCategoryCopy();
   updateUploadCount();
   updateStepIndicator();
+  renderUsage();
+  renderResultMode();
+  if (state.generationError) showGenerationError(state.generationError, false);
   document.documentElement.lang = state.lang === 'en' ? 'en' : 'zh-Hant';
 }
 
@@ -212,16 +220,31 @@ function showScreen(step) {
   });
   updateStepIndicator();
   updateFooter();
-  // focus first heading / interactive
+  $('.screens').scrollTop = 0;
   const active = $(`.screen[data-step="${step}"]`);
   const focusTarget = active?.querySelector('h1, h2, [tabindex="0"], button, .dropzone');
+  if (focusTarget?.matches('h1, h2')) focusTarget.tabIndex = -1;
   focusTarget?.focus?.({ preventScroll: true });
+  if (step === 2) requestAnimationFrame(checkTerms);
+  if (step === 6) renderResultMode();
+  if (step === 5 || step === 6) refreshUsage();
 }
 
 function updateFooter() {
   const footer = $('#footer-actions');
   const backBtn = $('#btn-back');
   const nextBtn = $('#btn-next');
+  const panel = $('#generation-panel');
+  const slot = state.step === 6 ? $('#generation-result-slot') : $('#generation-step5-slot');
+  if (panel.parentElement !== slot) slot.append(panel);
+  panel.hidden = state.step !== 5 && state.step !== 6;
+  $('#btn-return-result').hidden = !state.result || state.step === 6;
+  const valid = !!state.style && state.photos.length > 0 && !!currentGreeting()
+    && (state.category !== 'kids' || state.guardianConsent);
+  $('#greeting-required').hidden = state.greetingId !== 'custom' || !!currentGreeting();
+  $('#custom-greeting').setAttribute('aria-invalid', state.greetingId === 'custom' && !currentGreeting() ? 'true' : 'false');
+  $('#btn-local').disabled = state.generating || !valid;
+  $('#btn-regenerate').disabled = state.generating || !valid || !canGenerateAi();
   footer.classList.remove('hidden');
 
   if (state.step === 1 || state.step === 6) {
@@ -233,27 +256,109 @@ function updateFooter() {
   nextBtn.classList.remove('hidden');
 
   if (state.step === 2) {
-    nextBtn.textContent = tr('agree');
+    nextBtn.textContent = tr('agreeContinue');
     nextBtn.disabled = !state.agreed;
   } else if (state.step === 5) {
     nextBtn.textContent = tr('generate');
-    nextBtn.disabled = false;
+    nextBtn.disabled = state.generating || !valid || !canGenerateAi();
   } else {
-    nextBtn.textContent = tr('next');
+    nextBtn.textContent = tr(state.step === 3 ? 'nextUpload' : state.step === 4 ? 'nextGreeting' : 'next');
     if (state.step === 3) nextBtn.disabled = !state.style;
-    else if (state.step === 4) nextBtn.disabled = state.photos.length < 1;
+    else if (state.step === 4) nextBtn.disabled = state.photos.length < 1 || (state.category === 'kids' && !state.guardianConsent);
     else nextBtn.disabled = false;
   }
 }
 
+function canGenerateAi() {
+  return !!state.usage?.ai?.ready && state.usage?.usage?.available !== false
+    && !state.usageLoading && !state.usage?.usage?.busy;
+}
+
+function renderUsage() {
+  const el = $('#usage-status');
+  if (!el) return;
+  const data = state.usage;
+  if (state.usageLoading) el.textContent = tr('usageLoading');
+  else if (!data) el.textContent = tr('usageUnavailable');
+  else if (!data.ai?.ready) el.textContent = tr('usageNotReady');
+  else if (data.usage?.busy) el.textContent = tr('usageBusy');
+  else if (data.usage?.available === false && data.usage?.scope === 'storage') el.textContent = tr('usageUnavailable');
+  else if (data.usage?.available === false && data.usage?.scope === 'ip') el.textContent = tr('genLimit');
+  else {
+    const u = data.usage;
+    const remaining = Math.min(u.userRemaining ?? u.remaining, u.remaining);
+    el.textContent = tr(remaining > 0 ? 'usageRemaining' : 'usageDepleted', { n: remaining });
+  }
+}
+
+async function refreshUsage() {
+  if (state.usageLoading) return;
+  state.usageLoading = true;
+  renderUsage();
+  updateFooter();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
+  try {
+    const res = await fetch('/api/usage', { credentials: 'same-origin', signal: controller.signal });
+    const data = await res.json();
+    if (res.status === 401) {
+      showGenerationError('UNAUTHORIZED');
+      state.usage = null;
+    } else if (!res.ok || !data.ok) throw new Error('usage unavailable');
+    else {
+      state.usage = data;
+      if (!$('#btn-relogin').hidden) {
+        $('#btn-relogin').hidden = true;
+        $('#generation-notice').hidden = true;
+        state.generationError = null;
+      }
+    }
+  } catch {
+    state.usage = null;
+  } finally {
+    clearTimeout(timer);
+    state.usageLoading = false;
+    renderUsage();
+    updateFooter();
+  }
+}
+
+function showGenerationError(code, scroll = true) {
+  state.generationError = code || 'UNKNOWN';
+  const keys = { UNAUTHORIZED: 'genSessionExpired', RATE_LIMITED: 'genLimit', BUSY: 'usageBusy',
+    AI_DISABLED: 'usageNotReady', AI_MOCK: 'usageNotReady', AI_NOT_CONFIGURED: 'usageNotReady',
+    UPSTREAM_TIMEOUT: 'genTimeout', NETWORK_ERROR: 'genNetworkError', IMAGE_ASPECT_MISMATCH: 'genAspectError' };
+  const el = $('#generation-notice');
+  el.textContent = tr(keys[code] || 'genFailed');
+  el.hidden = false;
+  $('#btn-relogin').hidden = code !== 'UNAUTHORIZED';
+  if (scroll && (state.step === 5 || state.step === 6)) {
+    if (state.step === 6) $('#edit-design').open = true;
+    requestAnimationFrame(() => el.scrollIntoView({ block: 'nearest' }));
+  }
+}
+
+function designSignature() {
+  return JSON.stringify([state.category, state.style, state.photos.map((p) => p.id), currentGreeting(),
+    state.message.trim().slice(0, 30), $('#tweak-input').value.trim().slice(0, 300)]);
+}
+
+function renderResultMode() {
+  if (!state.result) return;
+  const mode = tr(state.result.mode === 'ai' ? 'modeAi' : state.result.mode === 'mock' ? 'modeMock' : 'modeLocal');
+  $('#result-mode').textContent = mode + (state.result.inputSignature !== designSignature() ? ' ' + tr('resultUnsaved') : '');
+}
+
 function setLang(lang) {
   state.lang = lang;
+  if (state.step === 2) state.agreed = false;
   $$('.lang-toggle button').forEach((b) => {
     b.setAttribute('aria-pressed', b.dataset.lang === lang ? 'true' : 'false');
   });
   setAuthLang(lang);
   applyI18n();
   updateFooter();
+  if (state.step === 2) requestAnimationFrame(checkTerms);
 }
 
 const preloadedImages = new Map();
@@ -326,7 +431,7 @@ function selectCategory(category) {
     btn.setAttribute('aria-pressed', btn.dataset.category === cat ? 'true' : 'false');
   });
   $$('#category-tabs .category-tab').forEach((tab) => {
-    tab.setAttribute('aria-selected', tab.dataset.category === cat ? 'true' : 'false');
+    tab.setAttribute('aria-pressed', tab.dataset.category === cat ? 'true' : 'false');
   });
   // Reset style if the selected style doesn't belong to the active category
   if (state.style) {
@@ -379,7 +484,7 @@ function updateUploadCount() {
 function renderThumbs() {
   const grid = $('#photo-grid');
   grid.innerHTML = '';
-  state.photos.forEach((p) => {
+  state.photos.forEach((p, i) => {
     const wrap = document.createElement('div');
     wrap.className = 'photo-thumb';
     const img = document.createElement('img');
@@ -388,7 +493,7 @@ function renderThumbs() {
     const rm = document.createElement('button');
     rm.type = 'button';
     rm.className = 'remove';
-    rm.setAttribute('aria-label', tr('removePhoto'));
+    rm.setAttribute('aria-label', tr('removePhotoAt', { n: i + 1 }));
     rm.textContent = '×';
     rm.addEventListener('click', () => removePhoto(p.id));
     wrap.append(img, rm);
@@ -409,10 +514,17 @@ function loadImageFromFile(file) {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
-    img.onload = () => resolve({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, url, img, file });
+    img.onload = () => {
+      if (!img.naturalWidth || img.naturalWidth * img.naturalHeight > 40000000) {
+        URL.revokeObjectURL(url);
+        reject(new Error(tr('uploadPixels')));
+        return;
+      }
+      resolve({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, url, img, file });
+    };
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error('bad image'));
+      reject(new Error(tr('uploadUnreadable')));
     };
     img.src = url;
   });
@@ -428,12 +540,25 @@ async function addFiles(fileList) {
   }
   for (const f of files.slice(0, room)) {
     try {
+      if (state.photos.length >= 2) throw new Error(tr('uploadMax'));
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(f.type)) throw new Error(tr('uploadType'));
+      if (!f.size || f.size > 8 * 1024 * 1024) throw new Error(tr('uploadSize'));
       const item = await loadImageFromFile(f);
+      if (state.photos.length >= 2) {
+        URL.revokeObjectURL(item.url);
+        throw new Error(tr('uploadMax'));
+      }
       state.photos.push(item);
-    } catch {
-      /* skip bad */
+      if (state.category === 'kids') {
+        state.guardianConsent = false;
+        $('#guardian-consent').checked = false;
+      }
+    } catch (err) {
+      errors.push(`${f.name}: ${err.message}`);
     }
   }
+  $('#upload-errors').textContent = errors.join('\n');
+  $('#upload-errors').hidden = errors.length === 0;
   renderThumbs();
 }
 
@@ -471,13 +596,15 @@ function currentSurname() {
 }
 
 function setLoading(on) {
+  state.generating = on;
   const ov = $('#loading-overlay');
   ov.classList.toggle('active', on);
   ov.setAttribute('aria-hidden', on ? 'false' : 'true');
   ov.setAttribute('aria-busy', on ? 'true' : 'false');
   if (on) $('#loading-text').textContent = tr('generating');
   // Keep footer / chrome inert while generating
-  ['#btn-back', '#btn-next', '#btn-regenerate', '#btn-download-diecut', '#btn-download', '#btn-download-trim', '#btn-share', '#btn-restart'].forEach((sel) => {
+  $('#app').inert = on;
+  ['#btn-back', '#btn-next', '#btn-regenerate', '#btn-download-diecut', '#btn-download', '#btn-download-trim', '#btn-share', '#btn-restart', '#btn-local'].forEach((sel) => {
     const b = $(sel);
     if (!b) return;
     if (on) {
@@ -491,7 +618,9 @@ function setLoading(on) {
   if (!on) updateFooter();
 }
 
-async function runGenerate() {
+async function runGenerate(local = false) {
+  if (state.generating) return false;
+  state.tweak = $('#tweak-input').value.trim().slice(0, 300);
   const greeting = currentGreeting();
   if (!greeting) {
     toast(tr('errGreeting'), { error: true });
@@ -505,12 +634,18 @@ async function runGenerate() {
     toast(tr('errPhotos'), { error: true });
     return false;
   }
+  if (state.category === 'kids' && !state.guardianConsent) {
+    toast(tr('guardianConsent'), { error: true });
+    showScreen(4);
+    return false;
+  }
 
   setLoading(true);
   // brief delay so overlay paints
   await new Promise((r) => setTimeout(r, 80));
   try {
     state.aspect = 'packet';
+    const inputSignature = designSignature();
     const result = await generatePacket({
       style: state.style,
       category: state.category,
@@ -520,24 +655,20 @@ async function runGenerate() {
       surname: currentSurname(),
       message: state.message.trim().slice(0, 30),
       tweak: state.tweak,
+      api: { useProxy: !local },
       // Keys live on the server (.env). Browser only hits /api/generate.
     });
-    state.result = { ...result };
-    if (result.mode === 'ai') {
-      toast(tr('genAiOk'));
-      console.info('[laisee] generation mode=ai', result.provider, result.model);
-    } else if (result.notice) {
-      toast(result.notice, { error: true });
-    } else {
-      toast(tr('genCanvasFallback'));
-      console.info('[laisee] generation mode=canvas (AI unavailable or failed)');
-    }
+    state.result = { ...result, inputSignature };
+    state.generationError = null;
+    $('#generation-notice').hidden = true;
+    renderResultMode();
     return true;
   } catch (err) {
-    toast(String(err?.message || err), { error: true });
+    showGenerationError(err?.code);
     return false;
   } finally {
     setLoading(false);
+    refreshUsage();
   }
 }
 
@@ -572,7 +703,7 @@ function selectPreviewView(view) {
   const v = view === 'front' ? 'front' : 'diecut';
   state.previewView = v;
   $$('.preview-view-tab').forEach((tab) => {
-    tab.setAttribute('aria-selected', tab.dataset.view === v ? 'true' : 'false');
+    tab.setAttribute('aria-pressed', tab.dataset.view === v ? 'true' : 'false');
   });
   const activeCanvas = getActivePreviewCanvas();
   if (activeCanvas) paintPreview(activeCanvas);
@@ -600,6 +731,14 @@ function paintPreview(sourceCanvas) {
   cv.width = sourceCanvas.width;
   cv.height = sourceCanvas.height;
   cv.getContext('2d').drawImage(sourceCanvas, 0, 0);
+  if (state.previewView === 'front') {
+    const ctx = cv.getContext('2d');
+    const inset = PRINT_SPEC.safeInsetIn * PRINT_SPEC.dpi;
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 4;
+    ctx.setLineDash([18, 12]);
+    ctx.strokeRect(inset, inset, cv.width - inset * 2, cv.height - inset * 2);
+  }
 
   fitPreviewToStage(cv);
   // if stage was still settling, relayout once more
@@ -615,6 +754,29 @@ function applyPreviewTransform(cv) {
 
 function setupPreviewGestures() {
   const stage = $('#preview-stage');
+  const zoom = (factor) => {
+    const cv = stage.querySelector('canvas');
+    if (!cv) return;
+    preview.scale = Math.min(4, Math.max(0.05, preview.scale * factor));
+    applyPreviewTransform(cv);
+  };
+  const reset = () => fitPreviewToStage(stage.querySelector('canvas'));
+  $('#btn-zoom-in').addEventListener('click', () => zoom(1.2));
+  $('#btn-zoom-out').addEventListener('click', () => zoom(1 / 1.2));
+  $('#btn-zoom-reset').addEventListener('click', reset);
+  stage.addEventListener('keydown', (e) => {
+    const cv = stage.querySelector('canvas');
+    if (!cv) return;
+    if (['+', '=', '-', '0', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault();
+    if (e.key === '+' || e.key === '=') zoom(1.2);
+    if (e.key === '-') zoom(1 / 1.2);
+    if (e.key === '0') reset();
+    if (e.key === 'ArrowLeft') preview.x -= 20;
+    if (e.key === 'ArrowRight') preview.x += 20;
+    if (e.key === 'ArrowUp') preview.y -= 20;
+    if (e.key === 'ArrowDown') preview.y += 20;
+    applyPreviewTransform(cv);
+  });
   if (typeof ResizeObserver !== 'undefined' && stage) {
     const ro = new ResizeObserver(() => {
       const cv = stage.querySelector('canvas');
@@ -649,7 +811,7 @@ function setupPreviewGestures() {
       const pts = [...preview.pointers.values()];
       const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
       if (preview.pinchStartDist > 0) {
-        preview.scale = Math.min(4, Math.max(0.3, preview.pinchStartScale * (dist / preview.pinchStartDist)));
+        preview.scale = Math.min(4, Math.max(0.05, preview.pinchStartScale * (dist / preview.pinchStartDist)));
         applyPreviewTransform(cv);
       }
     } else if (preview.dragging) {
@@ -676,7 +838,7 @@ function setupPreviewGestures() {
     const cv = stage.querySelector('canvas');
     if (!cv) return;
     const delta = e.deltaY > 0 ? 0.92 : 1.08;
-    preview.scale = Math.min(4, Math.max(0.3, preview.scale * delta));
+    preview.scale = Math.min(4, Math.max(0.05, preview.scale * delta));
     applyPreviewTransform(cv);
   }, { passive: false });
 }
@@ -691,8 +853,10 @@ function triggerPngDownload(blob, filename) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
+  document.body.appendChild(a);
   a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 60000);
 }
 
 
@@ -729,14 +893,12 @@ async function shareResult() {
   }
   const title = tr('shareTitle');
   const text = tr('shareText');
-  const pageUrl = typeof location !== 'undefined' ? location.href : '';
-  const canShareUrl = pageUrl && !isLocalOrPrivateUrl(pageUrl);
 
   // 1) Prefer Web Share with file/PNG when supported
   try {
     let file = null;
-    const shareCv = getActivePreviewCanvas() || state.result.canvas;
-    const shareSuffix = state.previewView === 'diecut' ? '-diecut.png' : '.png';
+    const shareCv = state.result.canvas;
+    const shareSuffix = '.png';
     if (shareCv) {
       file = await canvasToPngFile(shareCv, `laisee-2026-${downloadStamp()}${shareSuffix}`);
     } else if (state.result.blob) {
@@ -754,31 +916,27 @@ async function shareResult() {
         return;
       }
     }
-    // Share URL + title when we have a non-local URL
-    if (typeof navigator !== 'undefined' && navigator.share && canShareUrl) {
-      await navigator.share({ title, text, url: pageUrl });
-      toast(tr('shareFileOk'));
-      return;
-    }
   } catch (err) {
     // user cancel — silent
     if (err && (err.name === 'AbortError' || err.name === 'NotAllowedError')) return;
     console.warn('[laisee] share failed', err);
   }
 
-  // 2) Fallback: copy link if public-ish
-  if (canShareUrl && navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(pageUrl);
-      toast(tr('shareCopied'));
-      return;
-    } catch {
-      /* fall through */
-    }
-  }
+  toast(tr('shareUnavailable'));
+}
 
-  // 3) Local / no share: toast → download instead
-  toast(tr(canShareUrl ? 'shareUnavailable' : 'shareNoUrl'));
+async function shareSite() {
+  const url = new URL('/', location.href).href;
+  if (isLocalOrPrivateUrl(url)) return toast(tr('shareNoUrl'));
+  try {
+    if (navigator.share) await navigator.share({ title: tr('brand'), url });
+    else if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url);
+      toast(tr('shareCopied'));
+    } else toast(tr('shareUnavailable'));
+  } catch (err) {
+    if (err.name !== 'AbortError') toast(tr('shareUnavailable'));
+  }
 }
 
 /** Primary panorama: Full unfolded die-cut PNG (1860×2048). */
@@ -790,7 +948,7 @@ async function downloadResultDiecut() {
       surname: currentSurname(),
     });
     if (!blob) return;
-    triggerPngDownload(blob, `laisee-2026-${downloadStamp()}-diecut.png`);
+    triggerPngDownload(blob, `laisee-${downloadStamp()}-diecut-preview-only.png`);
   } catch (err) {
     console.error('[laisee] diecut export failed', err);
     toast(String(err?.message || err), { error: true });
@@ -832,6 +990,9 @@ function restart() {
     message: '',
     tweak: '',
     result: null,
+    guardianConsent: false,
+    previewView: 'front',
+    generationError: null,
   });
   $('#terms-scroll').scrollTop = 0;
   if ($('#custom-greeting')) $('#custom-greeting').value = '';
@@ -846,28 +1007,27 @@ function restart() {
   showScreen(1);
 }
 
+function checkTerms() {
+  const scroller = $('#terms-scroll');
+  if (state.step !== 2 || !scroller.clientHeight) return;
+  if (scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 8) state.agreed = true;
+  updateFooter();
+  $('#terms-hint').classList.toggle('hidden', state.agreed);
+}
+
 function setupTerms() {
   const scroller = $('#terms-scroll');
-  const check = () => {
-    const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 8;
-    if (atBottom) state.agreed = true;
-    updateFooter();
-    $('#terms-hint').classList.toggle('hidden', state.agreed);
-  };
-  scroller.addEventListener('scroll', check, { passive: true });
-  // if content fits without scroll
-  requestAnimationFrame(() => {
-    if (scroller.scrollHeight <= scroller.clientHeight + 4) {
-      state.agreed = true;
-      updateFooter();
-      $('#terms-hint').classList.add('hidden');
-    }
-  });
+  scroller.addEventListener('scroll', checkTerms, { passive: true });
+  new ResizeObserver(checkTerms).observe(scroller);
 }
 
 function setupUpload() {
   const dz = $('#dropzone');
   const input = $('#file-input');
+  $('#guardian-consent').addEventListener('change', (e) => {
+    state.guardianConsent = e.target.checked;
+    updateFooter();
+  });
 
   const openPicker = () => input.click();
   dz.addEventListener('click', openPicker);
@@ -1087,7 +1247,7 @@ async function goNext() {
     if (ok) {
       showScreen(6);
       requestAnimationFrame(() => {
-        selectPreviewView(state.previewView || 'diecut');
+        selectPreviewView(state.previewView || 'front');
       });
     }
   }
@@ -1097,19 +1257,39 @@ function goBack() {
   if (state.step <= 1) return;
   if (state.step === 3) state.agreed = false;
   showScreen(state.step - 1);
-  if (state.step === 2) {
-    // re-check terms scroll
-    const scroller = $('#terms-scroll');
-    state.agreed = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 8
-      || scroller.scrollHeight <= scroller.clientHeight + 4;
-    updateFooter();
-  }
+}
+
+let discardAction = null;
+function confirmDiscard(kind, action) {
+  const dialog = $('#restart-dialog');
+  $('#discard-title').textContent = tr(kind === 'logout' ? 'logoutTitle' : 'restartTitle');
+  $('#discard-message').textContent = tr(kind === 'logout' ? 'logoutConfirm' : 'restartConfirm');
+  $('#btn-confirm-restart').textContent = tr(kind === 'logout' ? 'logoutConfirmAction' : 'restartConfirmAction');
+  discardAction = action;
+  dialog.showModal();
 }
 
 function bindChrome() {
-  $$('.lang-toggle button').forEach((b) => {
-    b.addEventListener('click', () => setLang(b.dataset.lang));
+  $('#btn-cancel-restart').addEventListener('click', () => $('#restart-dialog').close());
+  $('#btn-confirm-restart').addEventListener('click', () => {
+    const action = discardAction;
+    $('#restart-dialog').close();
+    action?.();
   });
+  $('#restart-dialog').addEventListener('close', () => { discardAction = null; });
+  window.addEventListener('laisee:beforelogout', (event) => {
+    if (state.photos.length || state.result || state.customGreeting || state.message) {
+      event.preventDefault();
+      confirmDiscard('logout', event.detail.proceed);
+    }
+  });
+  window.addEventListener('laisee:logout-error', () => {
+    const notice = $('#session-notice');
+    notice.hidden = false;
+    notice.textContent = tr('logoutFailed');
+    notice.scrollIntoView({ block: 'nearest' });
+  });
+  $('#tweak-input').addEventListener('input', renderResultMode);
   $$('.mode-card').forEach((card) => {
     card.addEventListener('click', () => selectCategory(card.dataset.category));
   });
@@ -1147,7 +1327,7 @@ function bindChrome() {
     state.tweak = $('#tweak-input').value;
     const ok = await runGenerate();
     if (ok && state.result?.canvas) {
-      requestAnimationFrame(() => selectPreviewView(state.previewView || 'diecut'));
+      requestAnimationFrame(() => selectPreviewView(state.previewView || 'front'));
     }
   });
 
@@ -1161,9 +1341,10 @@ function init() {
   setupGreeting();
   setupPreviewGestures();
   bindChrome();
-  setLang('zh-Hant');
+  setLang(state.lang);
   selectAspect('2:3');
   showScreen(1);
+  refreshUsage();
 
   // expose for playwright / debugging without console noise
   window.__laisee = {

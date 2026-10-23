@@ -357,7 +357,7 @@ export function buildPacketPrompt({ styleId, category, greeting = '', surname = 
   const tw = String(tweak || '').trim();
 
   const lines = [
-    'Create one finished full-bleed Lunar New Year red-envelope (利是封) FRONT artwork, portrait 3.5×6.75 inch (API aspect 2:3), ready for flat printing. No envelope mockup, folds, frames, cut marks or watermarks.',
+    'Create one finished full-bleed Lunar New Year red-envelope (利是封) FRONT artwork, composed directly in the narrow portrait ratio requested by the API (1:2 or 9:16), for a final 3.5×6.75 inch trim (14:27). A small centered crop will fit the final trim without stretching or adding borders. Keep the outer 5% at the top and bottom and outer 7% at the left and right as expendable colored background only. Keep complete subjects, faces, ears and all lettering further inside: at least 7% from the top and bottom and 10% from the left and right. These safety margins override reference-template framing. No envelope mockup, folds, frames, cut marks or watermarks.',
     '',
     `TARGET AUDIENCE MODE: ${isKids ? 'KIDS & FAMILY (小朋友／親子專區 — recognizable child likeness drawn in a stylized illustration style, natural child proportions, festive New Year kids clothing)' : 'PETS & ANIMALS (小動物／毛孩專區 — focus on exact animal species, breed, coat color/markings, and festive pet accessories)'}.`,
     '',

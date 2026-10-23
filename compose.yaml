@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    hostname: laisee-app
+    restart: unless-stopped
+    init: true
+    env_file: .env.production
+    environment:
+      NODE_ENV: production
+      LOAD_DOTENV: "0"
+      HOST: 0.0.0.0
+      PORT: "8765"
+      GEN_USAGE_FILE: /data/gen-usage.json
+      AI_DISABLE_FILE: /data/ai-paused
+    ports:
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - usage:/data
+    stop_grace_period: 140s
+volumes:
+  usage:

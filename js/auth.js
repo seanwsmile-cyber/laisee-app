@@ -11,6 +11,10 @@ let config = {
   eprintEnabled: false,
 };
 let user = null;
+let checking = false;
+let authStatus = 'authLoading';
+let startApp;
+let initialized = false;
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
@@ -42,16 +46,16 @@ function applyAuthI18n() {
   }
   updateProviderButtons();
   renderUserChip();
+  const status = $('#auth-status');
+  if (status) status.textContent = authStatus ? tr(authStatus) : '';
 }
 
 function updateProviderButtons() {
   const googleBtn = $('#btn-login-google');
-  const eprintBtn = $('#btn-login-eprint');
   const googleHint = $('#auth-google-hint');
-  const eprintHint = $('#auth-eprint-hint');
-  if (!googleBtn || !eprintBtn) return;
+  if (!googleBtn) return;
 
-  if (config.googleConfigured) {
+  if (config.googleConfigured && !checking) {
     googleBtn.disabled = false;
     googleBtn.removeAttribute('aria-disabled');
     if (googleHint) {
@@ -62,28 +66,12 @@ function updateProviderButtons() {
     googleBtn.disabled = true;
     googleBtn.setAttribute('aria-disabled', 'true');
     if (googleHint) {
-      googleHint.hidden = false;
-      googleHint.textContent = tr('authGoogleUnset');
+      googleHint.hidden = checking;
+      googleHint.textContent = checking ? '' : tr('authGoogleUnset');
     }
   }
 
-  if (config.eprintConfigured) {
-    eprintBtn.disabled = false;
-    eprintBtn.removeAttribute('aria-disabled');
-    eprintBtn.textContent = tr('authEprint');
-    if (eprintHint) {
-      eprintHint.hidden = true;
-      eprintHint.textContent = '';
-    }
-  } else {
-    eprintBtn.disabled = true;
-    eprintBtn.setAttribute('aria-disabled', 'true');
-    eprintBtn.textContent = tr('authEprintSoon');
-    if (eprintHint) {
-      eprintHint.hidden = false;
-      eprintHint.textContent = tr('authEprintPending');
-    }
-  }
+  if ($('#btn-auth-retry')) $('#btn-auth-retry').disabled = checking;
 }
 
 function renderUserChip() {
@@ -136,15 +124,21 @@ function showGate(show) {
   }
 }
 
-async function fetchMe() {
-  const res = await fetch('/api/me', { credentials: 'same-origin' });
-  let json = null;
+async function fetchAuthJson(url, options = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
   try {
-    json = await res.json();
-  } catch {
-    json = null;
+    const res = await fetch(url, { credentials: 'same-origin', ...options, signal: controller.signal });
+    if (!res.ok && res.status !== 401) throw new Error('auth service unavailable');
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
   }
-  if (res.ok && json?.authenticated && json.user) {
+}
+
+async function fetchMe() {
+  const json = await fetchAuthJson('/api/me');
+  if (json?.authenticated && json.user) {
     user = json.user;
     if (json.googleConfigured != null) {
       config = {
@@ -161,9 +155,7 @@ async function fetchMe() {
 }
 
 async function fetchConfig() {
-  try {
-    const res = await fetch('/api/auth/config', { credentials: 'same-origin' });
-    const json = await res.json();
+    const json = await fetchAuthJson('/api/auth/config');
     if (json?.ok) {
       config = {
         authDisabled: !!json.authDisabled,
@@ -172,36 +164,36 @@ async function fetchConfig() {
         eprintEnabled: !!json.eprintEnabled,
       };
     }
-  } catch {
-    /* keep defaults */
-  }
 }
 
-async function onLogout() {
+function onLogout() {
+  const event = new CustomEvent('laisee:beforelogout', { cancelable: true, detail: { proceed: performLogout } });
+  if (window.dispatchEvent(event)) performLogout();
+}
+
+async function performLogout() {
+  const button = $('#btn-logout');
+  if (button?.disabled) return;
+  if (button) button.disabled = true;
   try {
-    await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' });
+    const result = await fetchAuthJson('/api/logout', { method: 'POST' });
+    if (!result?.ok) throw new Error('logout failed');
+    user = null;
+    showGate(true);
+    window.location.href = '/';
   } catch {
-    /* ignore */
+    window.dispatchEvent(new Event('laisee:logout-error'));
+    if (button) button.disabled = false;
   }
-  user = null;
-  showGate(true);
-  await fetchConfig();
-  applyAuthI18n();
-  // Soft reload so app state resets without leaking previous flow
-  window.location.href = '/';
 }
 
 function bindGateButtons() {
   const googleBtn = $('#btn-login-google');
-  const eprintBtn = $('#btn-login-eprint');
   googleBtn?.addEventListener('click', () => {
     if (googleBtn.disabled) return;
     window.location.href = '/auth/google';
   });
-  eprintBtn?.addEventListener('click', () => {
-    if (eprintBtn.disabled) return;
-    window.location.href = '/auth/eprint';
-  });
+  $('#btn-auth-retry')?.addEventListener('click', checkSession);
 }
 
 /**
@@ -209,6 +201,7 @@ function bindGateButtons() {
  * @param {() => void} initApp
  */
 export async function ensureAuth(initApp) {
+  startApp = initApp;
   bindGateButtons();
   const params = new URLSearchParams(window.location.search);
   if (params.get('auth_error')) {
@@ -219,39 +212,32 @@ export async function ensureAuth(initApp) {
     }
   }
 
-  let ok = false;
-  try {
-    ok = await fetchMe();
-  } catch {
-    ok = false;
-  }
+  await checkSession();
+}
 
-  if (!ok) {
-    await fetchConfig();
-    if (config.authDisabled) {
-      // AUTH_DISABLED: bypass gate even if /api/me is slow or fails
-      try {
-        ok = await fetchMe();
-      } catch {
-        /* ignore */
-      }
-      applyAuthI18n();
-      showGate(false);
-      renderUserChip();
-      initApp();
-      return;
-    }
-  }
-
-  applyAuthI18n();
-
-  if (ok && user) {
-    showGate(false);
-    renderUserChip();
-    initApp();
-    return;
-  }
-
+async function checkSession() {
+  if (checking) return;
+  checking = true;
+  authStatus = 'authLoading';
   showGate(true);
-  updateProviderButtons();
+  applyAuthI18n();
+  try {
+    const ok = await fetchMe();
+    if (ok && user) {
+      authStatus = '';
+      showGate(false);
+      if (!initialized) {
+        initialized = true;
+        startApp();
+      }
+    } else {
+      await fetchConfig();
+      authStatus = '';
+    }
+  } catch {
+    authStatus = 'authConnectionError';
+  } finally {
+    checking = false;
+    applyAuthI18n();
+  }
 }
